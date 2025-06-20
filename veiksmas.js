@@ -16,17 +16,19 @@ document.addEventListener('DOMContentLoaded', function() {
     let activities = [];
     let currentlyEditingId = null;
     
-    // Add activity button
+    // DOM elements
     const addActivityBtn = document.getElementById('add-activity');
-    addActivityBtn.addEventListener('click', addActivity);
-    
-    // Generate calendar button
     const generateCalendarBtn = document.getElementById('generate-calendar');
-    generateCalendarBtn.addEventListener('click', generateCalendar);
-    
-    // Download calendar button
     const downloadCalendarBtn = document.getElementById('download-calendar');
+    const saveScheduleBtn = document.getElementById('save-schedule');
+    const scheduleNameInput = document.getElementById('schedule-name');
+    const schedulesList = document.getElementById('schedules-list');
+    
+    // Event listeners
+    addActivityBtn.addEventListener('click', addActivity);
+    generateCalendarBtn.addEventListener('click', generateCalendar);
     downloadCalendarBtn.addEventListener('click', downloadCalendarAsPNG);
+    saveScheduleBtn.addEventListener('click', saveCurrentSchedule);
     
     // Function to add or update activity
     function addActivity() {
@@ -372,6 +374,101 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Initialize with empty activities list message
+    // Function to save current schedule
+    function saveCurrentSchedule() {
+        const scheduleName = scheduleNameInput.value.trim();
+        if (!scheduleName) {
+            alert('Please enter a schedule name');
+            return;
+        }
+        
+        const scheduleData = {
+            name: scheduleName,
+            activities: [...activities], // Copy of current activities
+            timestamp: new Date().toISOString()
+        };
+        
+        // Get existing schedules or initialize empty array
+        const savedSchedules = JSON.parse(localStorage.getItem('savedSchedules')) || [];
+        
+        // Check if this name already exists
+        const existingIndex = savedSchedules.findIndex(s => s.name === scheduleName);
+        if (existingIndex >= 0) {
+            if (!confirm(`Schedule "${scheduleName}" already exists. Overwrite?`)) {
+                return;
+            }
+            savedSchedules[existingIndex] = scheduleData;
+        } else {
+            savedSchedules.push(scheduleData);
+        }
+        
+        localStorage.setItem('savedSchedules', JSON.stringify(savedSchedules));
+        scheduleNameInput.value = '';
+        updateSchedulesList();
+    }
+    
+    // Function to load a saved schedule
+    function loadSchedule(scheduleName) {
+        const savedSchedules = JSON.parse(localStorage.getItem('savedSchedules')) || [];
+        const scheduleToLoad = savedSchedules.find(s => s.name === scheduleName);
+        
+        if (scheduleToLoad) {
+            activities = [...scheduleToLoad.activities];
+            updateActivitiesList();
+            alert(`Schedule "${scheduleName}" loaded successfully!`);
+        }
+    }
+    
+    // Function to delete a saved schedule
+    function deleteSchedule(scheduleName, event) {
+        if (event) event.stopPropagation();
+        
+        if (!confirm(`Are you sure you want to delete "${scheduleName}"?`)) {
+            return;
+        }
+        
+        const savedSchedules = JSON.parse(localStorage.getItem('savedSchedules')) || [];
+        const updatedSchedules = savedSchedules.filter(s => s.name !== scheduleName);
+        
+        localStorage.setItem('savedSchedules', JSON.stringify(updatedSchedules));
+        updateSchedulesList();
+    }
+    
+    // Function to update the schedules list display
+    function updateSchedulesList() {
+        const savedSchedules = JSON.parse(localStorage.getItem('savedSchedules')) || [];
+        schedulesList.innerHTML = '';
+        
+        if (savedSchedules.length === 0) {
+            schedulesList.innerHTML = '<p style="color: #6E6761; font-size: 12px; text-align: center;">No saved schedules</p>';
+            return;
+        }
+        
+        // Sort schedules by timestamp (newest first)
+        savedSchedules.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        
+        savedSchedules.forEach(schedule => {
+            const scheduleElement = document.createElement('div');
+            scheduleElement.className = 'schedule-item';
+            
+            const scheduleBtn = document.createElement('button');
+            scheduleBtn.className = 'schedule-btn';
+            scheduleBtn.textContent = schedule.name;
+            scheduleBtn.addEventListener('click', () => loadSchedule(schedule.name));
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'remove-activity';
+            deleteBtn.innerHTML = '×';
+            deleteBtn.title = 'Delete this schedule';
+            deleteBtn.addEventListener('click', (e) => deleteSchedule(schedule.name, e));
+            
+            scheduleElement.appendChild(scheduleBtn);
+            scheduleElement.appendChild(deleteBtn);
+            schedulesList.appendChild(scheduleElement);
+        });
+    }
+    
+    // Initialize with empty activities list and schedules list
     updateActivitiesList();
+    updateSchedulesList();
 });
