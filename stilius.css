@@ -52,6 +52,7 @@ h1 {
 
 .form-group {
     margin-bottom: 0px;
+  margin-top:8px;
   text-transform:uppercase;
   font-family:"Lemon/Milk light", sans-serif;
   letter-spacing:1px;
@@ -180,7 +181,7 @@ letter-spacing:1px;}
 }
 
 .activity-description {
-    margin-top: 5px;
+    margin-top: 5px !important;
     font-size: 13px;
 }
 .activity-desc-display {font-style:italic;
