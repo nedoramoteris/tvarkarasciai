@@ -427,6 +427,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Function to load a saved schedule
     function loadSchedule(scheduleName) {
+        // Clear the generated calendar first
+        document.querySelectorAll('.calendar-day').forEach(dayElement => {
+            const dayHeader = dayElement.querySelector('.day-header');
+            dayElement.innerHTML = '';
+            dayElement.appendChild(dayHeader);
+        });
+        
         const savedSchedules = JSON.parse(localStorage.getItem('savedSchedules')) || [];
         const scheduleToLoad = savedSchedules.find(s => s.name === scheduleName);
         
