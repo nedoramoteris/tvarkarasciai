@@ -1,21 +1,24 @@
-     <meta charset="UTF-8" />    <meta content="width=device-width, initial-scale=1.0" name="viewport" />    <title>Personažų tvarkaraščių generatorius</title>    <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/lemonmilk" />    <link href="https://cdn.jsdelivr.net/gh/nedoramoteris/tvarkarasciai@main/stilius.css" rel="stylesheet" />     
-<link rel="icon" href="https://i.servimg.com/u/f57/13/40/85/94/untitl13.png" type="image/x-icon">
-<div class="container">
-	        
-	<div class="planner-container">
-		            
-		<h1>
-			Personažų tvarkaraščių generatorius
-		</h1>
-		                                        
-		<div class="form-section">
-			                
-			<h2 class="calendar-title">
-				Pridėti veiklą
-			</h2>
-			                                                    
-			<div class="form-group">
-				                    <label for="activity-day">Savaitės diena</label>                    <select id="activity-day">
+<!DOCTYPE html>
+<html lang="en">
+    <link href="https://fonts.cdnfonts.com/css/lemonmilk" rel="stylesheet">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personažų tvarkaraščių generatorius</title>
+  <link rel="icon" href="https://i.servimg.com/u/f57/13/40/85/94/untitl13.png" type="image/x-icon">
+    <link rel="stylesheet" href="stilius.css">
+</head>
+<body>
+    <div class="container">
+        <div class="planner-container">
+            <h1>Personažų tvarkaraščių generatorius</h1>
+            
+            <div class="form-section">
+                <h2 class="calendar-title">Pridėti veiklą</h2>
+                
+                <div class="form-group">
+                    <label for="activity-day">Savaitės diena</label>
+                    <select id="activity-day">
                         <option value="Pirmadienis">Pirmadienis</option>
                         <option value="Antradienis">Antradienis</option>
                         <option value="Trečiadienis">Trečiadienis</option>
@@ -23,135 +26,86 @@
                         <option value="Penktadienis">Penktadienis</option>
                         <option value="Šeštadienis">Šeštadienis</option>
                         <option value="Sekmadienis">Sekmadienis</option>
-                    </select>                
-			</div>
-			                                                    
-			<div class="form-group">
-				                    <label for="activity-time">Laikas</label>                    
-				<div class="time-inputs">
-					                        <input placeholder="Start time" id="start-time" type="time" />                        <input placeholder="End time" id="end-time" type="time" />                    
-				</div>
-				                
-			</div>
-			                                                    
-			<div class="form-group">
-				                    <label for="activity-name">Veiklos pavadinimas</label>                    <input placeholder="įvesti veiklos pavadinimą" id="activity-name" type="text" />                
-			</div>
-			                                                   
-			<div class="form-group">
-				                    <label for="activity-desc">Aprašymas (nebūtina)</label>                    <textarea placeholder="įvesti aprašymą" rows="2" id="activity-desc"></textarea>                
-			</div>
-			                            
-			<div class="form-group">
-				                    <label for="availability">Ar įmanoma su personažu susisiekti šios veiklos metu</label>                    <select id="availability">
-                        <option value="available">Taip</option>
-                        <option value="somewhat">Kartais</option>
-                        <option value="unavailable">Ne</option>
-                    </select>                
-			</div>
-			                            
-			<button id="add-activity" class="add-activity">
-				PRIDĖTI
-			</button>
-			                                                    
-			<div id="activities-list" class="activities-list">
-				                    
-				<!--  Activities will be added here  -->                
-			</div>
-			            
-		</div>
-		                                        
-		<div class="calendar-section">
-			                
-			<div class="calendar-header">
-				                    
-				<h2 class="calendar-title">
-					SAVAITINIS TVARKARAŠTIS
-				</h2>
-				                    
-				<div class="calendar-actions">
-					                        
-					<button id="generate-calendar" class="generate-calendar">
-						GENERUOTI
-					</button>
-					                        
-					<button id="download-calendar" class="download-calendar">
-						ATSISIŲSTI KAIP PNG
-					</button>
-					                    
-				</div>
-				                
-			</div>
-			                                                    
-			<div id="calendar-grid" class="calendar-grid">
-				                    
-				<div class="calendar-day">
-					                        
-					<div class="day-header">
-						Pirmadienis
-					</div>
-					                    
-				</div>
-				                    
-				<div class="calendar-day">
-					                        
-					<div class="day-header">
-						Antradienis
-					</div>
-					                    
-				</div>
-				                    
-				<div class="calendar-day">
-					                        
-					<div class="day-header">
-						Trečiadienis
-					</div>
-					                    
-				</div>
-				                    
-				<div class="calendar-day">
-					                        
-					<div class="day-header">
-						Ketvirtadienis
-					</div>
-					                    
-				</div>
-				                    
-				<div class="calendar-day">
-					                        
-					<div class="day-header">
-						Penktadienis
-					</div>
-					                    
-				</div>
-				                    
-				<div class="calendar-day">
-					                        
-					<div class="day-header">
-						Šeštadienis
-					</div>
-					                    
-				</div>
-				                    
-				<div class="calendar-day">
-					                        
-					<div class="day-header">
-						Sekmadienis
-					</div>
-					                    
-				</div>
-				                
-			</div>
-			            
-		</div>
-		        
-	</div>
-	    
-</div>
-               
-<!--  Hidden canvas for PNG generation  -->    <canvas id="calendar-canvas"></canvas>              
-<div id="dark-mode-toggle" class="dark-mode-toggle">
-	☀︎
-</div>
-               
-<!--  Include html2canvas library for PNG export  -->    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>    <script src="https://cdn.jsdelivr.net/gh/nedoramoteris/tvarkarasciai@main/veiksmas.js"></script> 
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="activity-time">Laikas</label>
+                    <div class="time-inputs">
+                        <input type="time" id="start-time" placeholder="Start time">
+                        <input type="time" id="end-time" placeholder="End time">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="activity-name">Veiklos pavadinimas</label>
+                    <input type="text" id="activity-name" placeholder="įvesti veiklos pavadinimą">
+                </div>
+                
+               <div class="form-group">
+        <label for="activity-desc">Aprašymas (nebūtina)</label>
+        <textarea id="activity-desc" rows="2" placeholder="įvesti aprašymą"></textarea>
+    </div>
+    
+    <div class="form-group">
+        <label for="availability">Ar įmanoma su personažu susisiekti šios veiklos metu</label>
+        <select id="availability">
+            <option value="available">Taip</option>
+            <option value="somewhat">Kartais</option>
+            <option value="unavailable">Ne</option>
+        </select>
+    </div>
+    
+    <button class="add-activity" id="add-activity">ADD ACTIVITY</button>
+                
+                <div class="activities-list" id="activities-list">
+                    <!-- Activities will be added here -->
+                </div>
+            </div>
+            
+            <div class="calendar-section">
+                <div class="calendar-header">
+                    <h2 class="calendar-title">SAVAITINIS TVARKARAŠTIS</h2>
+                    <div class="calendar-actions">
+                        <button class="generate-calendar" id="generate-calendar">GENERUOTI</button>
+                        <button class="download-calendar" id="download-calendar">ATSISIŲSTI KAIP PNG</button>
+                    </div>
+                </div>
+                
+                <div class="calendar-grid" id="calendar-grid">
+                    <div class="calendar-day">
+                        <div class="day-header">Pirmadienis</div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-header">Antradienis</div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-header">Trečiadienis</div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-header">Ketvirtadienis</div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-header">Penktadienis</div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-header">Šeštadienis</div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-header">Sekmadienis</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hidden canvas for PNG generation -->
+    <canvas id="calendar-canvas"></canvas>
+    
+    <div class="dark-mode-toggle" id="dark-mode-toggle">☾</div>
+    
+    <!-- Include html2canvas library for PNG export -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="veiksmas.js"></script>
+</body>
+</html>
