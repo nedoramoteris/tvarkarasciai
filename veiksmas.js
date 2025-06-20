@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Activities array to store all activities
     let activities = [];
+    let currentlyEditingId = null;
     
     // Add activity button
     const addActivityBtn = document.getElementById('add-activity');
@@ -27,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const downloadCalendarBtn = document.getElementById('download-calendar');
     downloadCalendarBtn.addEventListener('click', downloadCalendarAsPNG);
     
-    // Function to add activity
+    // Function to add or update activity
     function addActivity() {
         const day = document.getElementById('activity-day').value;
         const startTime = document.getElementById('start-time').value;
@@ -41,17 +42,36 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        const activity = {
-            day,
-            startTime,
-            endTime,
-            name,
-            desc,
-            availability,
-            id: Date.now()
-        };
+        if (currentlyEditingId !== null) {
+            // Update existing activity
+            const index = activities.findIndex(activity => activity.id === currentlyEditingId);
+            if (index !== -1) {
+                activities[index] = {
+                    day,
+                    startTime,
+                    endTime,
+                    name,
+                    desc,
+                    availability,
+                    id: currentlyEditingId
+                };
+            }
+            currentlyEditingId = null;
+            addActivityBtn.textContent = 'Pridėti veiklą';
+        } else {
+            // Add new activity
+            const activity = {
+                day,
+                startTime,
+                endTime,
+                name,
+                desc,
+                availability,
+                id: Date.now()
+            };
+            activities.push(activity);
+        }
         
-        activities.push(activity);
         updateActivitiesList();
         clearForm();
     }
@@ -79,7 +99,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     ${activity.desc ? `<div class="activity-description">${activity.desc}</div>` : ''}
                     <div class="activity-availability">${formatAvailability(activity.availability)}</div>
                 </div>
-                <button class="remove-activity" data-id="${activity.id}">×</button>
+                <div class="activity-actions">
+                    <button class="edit-activity" data-id="${activity.id}">Redaguoti</button>
+                    <button class="remove-activity" data-id="${activity.id}">×</button>
+                </div>
             `;
             
             activitiesList.appendChild(activityItem);
@@ -92,6 +115,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateActivitiesList();
             });
         });
+        
+        document.querySelectorAll('.edit-activity').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = parseInt(this.dataset.id);
+                editActivity(id);
+            });
+        });
+    }
+    
+    // Function to edit an activity
+    function editActivity(id) {
+        const activity = activities.find(activity => activity.id === id);
+        if (!activity) return;
+        
+        document.getElementById('activity-day').value = activity.day;
+        document.getElementById('start-time').value = activity.startTime;
+        document.getElementById('end-time').value = activity.endTime;
+        document.getElementById('activity-name').value = activity.name;
+        document.getElementById('activity-desc').value = activity.desc;
+        document.getElementById('availability').value = activity.availability;
+        
+        currentlyEditingId = id;
+        addActivityBtn.textContent = 'Atnaujinti veiklą';
+        
+        // Scroll to form
+        document.getElementById('activity-form').scrollIntoView({ behavior: 'smooth' });
     }
     
     // Function to format availability text
@@ -111,6 +160,8 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('start-time').value = '';
         document.getElementById('end-time').value = '';
         document.getElementById('availability').value = 'available';
+        currentlyEditingId = null;
+        addActivityBtn.textContent = 'Pridėti veiklą';
     }
     
     // Function to format time (HH:MM to H:MM AM/PM)
