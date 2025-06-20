@@ -1,5 +1,7 @@
-body {font-family: 'Montserrat', sans-serif;
-    background: #1c1c1b !important;
+body, html {
+
+    font-family: 'Montserrat', sans-serif;
+    background-color: #1c1c1b;
     color: #6E6761;
 }
 
@@ -137,7 +139,6 @@ input:focus, select:focus, textarea:focus {
 
 .activities-list {
     margin-top: 20px;
-    font-family:'lemon/milk light',sans-serif;
 }
 
 .activity-item {
@@ -194,7 +195,7 @@ text-align:justify;}
 }
 
 .remove-activity:hover {
-    color: #aba19e;
+    color: red;
 }
 
 .calendar-section {
@@ -401,3 +402,28 @@ letter-spacing:1px;}
   font-size:7px !important;
 }
 
+.activity-actions {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: auto;
+}
+
+.edit-activity {
+background: none;
+  color: #6E6761;
+  font-weight:bold;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'lemon/milk light', sans-serif;
+    font-size: 10px;
+    transition: background-color 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.edit-activity:hover {
+    color: #aba19e;
+}
