@@ -13,8 +13,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Activities array to store all activities
-    let activities = [];
+    let activities = JSON.parse(localStorage.getItem('currentActivities')) || [];
     let currentlyEditingId = null;
+    let currentScheduleName = localStorage.getItem('currentScheduleName') || null;
     
     // DOM elements
     const addActivityBtn = document.getElementById('add-activity');
@@ -47,10 +48,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectedDays = Array.from(dayCheckboxes).map(cb => cb.value);
         
         if (currentlyEditingId !== null) {
-            // Remove existing activities with this ID (for editing)
-            activities = activities.filter(activity => activity.id !== currentlyEditingId);
+            // Remove ALL existing activities with this ID (for editing)
+            activities = activities.filter(activity => Math.floor(activity.id) !== Math.floor(currentlyEditingId));
             
-            // Add updated activities for each selected day
+            // Add updated activities for each selected day with the same base ID
             selectedDays.forEach(day => {
                 activities.push({
                     day,
@@ -59,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     name,
                     desc,
                     availability,
-                    id: currentlyEditingId
+                    id: currentlyEditingId + Math.random() // Keep same base ID but with new decimals
                 });
             });
             
@@ -67,6 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
             addActivityBtn.textContent = 'Pridėti veiklą';
         } else {
             // Add new activities for each selected day
+            const baseId = Date.now();
             selectedDays.forEach(day => {
                 const activity = {
                     day,
@@ -75,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     name,
                     desc,
                     availability,
-                    id: Date.now() + Math.random() // Unique ID for each instance
+                    id: baseId + Math.random() // Unique ID for each instance with same base
                 };
                 activities.push(activity);
             });
@@ -83,6 +85,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         updateActivitiesList();
         clearForm();
+        saveCurrentState();
     }
     
     // Function to update activities list
@@ -106,7 +109,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     instances: [activity]
                 };
             } else {
-                groupedActivities[baseId].days.push(activity.day);
+                if (!groupedActivities[baseId].days.includes(activity.day)) {
+                    groupedActivities[baseId].days.push(activity.day);
+                }
                 groupedActivities[baseId].instances.push(activity);
             }
         });
@@ -162,6 +167,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (confirm('Ar tikrai norite pašalinti šią veiklą?')) {
             activities = activities.filter(activity => Math.floor(activity.id) !== Math.floor(id));
             updateActivitiesList();
+            saveCurrentState();
         }
     }
     
@@ -238,6 +244,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         updateActivitiesList();
+        saveCurrentState();
         
         // Scroll to the bottom of the activities list
         setTimeout(() => {
@@ -403,8 +410,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         localStorage.setItem('savedSchedules', JSON.stringify(savedSchedules));
+        localStorage.setItem('currentScheduleName', scheduleName);
+        currentScheduleName = scheduleName;
         scheduleNameInput.value = '';
         updateSchedulesList();
+        saveCurrentState();
+    }
+    
+    // Function to save current state to localStorage
+    function saveCurrentState() {
+        localStorage.setItem('currentActivities', JSON.stringify(activities));
+        if (currentScheduleName) {
+            localStorage.setItem('currentScheduleName', currentScheduleName);
+        }
     }
     
     // Function to load a saved schedule
@@ -414,6 +432,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (scheduleToLoad) {
             activities = [...scheduleToLoad.activities];
+            currentScheduleName = scheduleName;
+            localStorage.setItem('currentScheduleName', scheduleName);
+            localStorage.setItem('currentActivities', JSON.stringify(activities));
             updateActivitiesList();
             alert(`Schedule "${scheduleName}" loaded successfully!`);
         }
@@ -431,6 +452,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const updatedSchedules = savedSchedules.filter(s => s.name !== scheduleName);
         
         localStorage.setItem('savedSchedules', JSON.stringify(updatedSchedules));
+        
+        // If we're deleting the currently loaded schedule, clear it
+        if (currentScheduleName === scheduleName) {
+            activities = [];
+            currentScheduleName = null;
+            localStorage.removeItem('currentScheduleName');
+            localStorage.removeItem('currentActivities');
+            updateActivitiesList();
+        }
+        
         updateSchedulesList();
     }
     
@@ -468,7 +499,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Initialize with empty activities list and schedules list
+    // Initialize with saved activities and schedules list
     updateActivitiesList();
     updateSchedulesList();
+    
+    // If we have a current schedule name but no activities, try to load it
+    if (currentScheduleName && activities.length === 0) {
+        loadSchedule(currentScheduleName);
+    }
 });
