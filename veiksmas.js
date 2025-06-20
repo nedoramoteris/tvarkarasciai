@@ -30,23 +30,27 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Function to add or update activity
     function addActivity() {
-        const day = document.getElementById('activity-day').value;
+        const dayCheckboxes = document.querySelectorAll('input[name="activity-days"]:checked');
         const startTime = document.getElementById('start-time').value;
         const endTime = document.getElementById('end-time').value;
         const name = document.getElementById('activity-name').value.trim();
         const desc = document.getElementById('activity-desc').value.trim();
         const availability = document.getElementById('availability').value;
         
-        if (!name || !startTime || !endTime) {
-            alert('Please fill in all required fields');
+        if (!name || !startTime || !endTime || dayCheckboxes.length === 0) {
+            alert('Please fill in all required fields and select at least one day');
             return;
         }
         
+        const selectedDays = Array.from(dayCheckboxes).map(cb => cb.value);
+        
         if (currentlyEditingId !== null) {
-            // Update existing activity
-            const index = activities.findIndex(activity => activity.id === currentlyEditingId);
-            if (index !== -1) {
-                activities[index] = {
+            // Remove existing activities with this ID (for editing)
+            activities = activities.filter(activity => activity.id !== currentlyEditingId);
+            
+            // Add updated activities for each selected day
+            selectedDays.forEach(day => {
+                activities.push({
                     day,
                     startTime,
                     endTime,
@@ -54,22 +58,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     desc,
                     availability,
                     id: currentlyEditingId
-                };
-            }
+                });
+            });
+            
             currentlyEditingId = null;
             addActivityBtn.textContent = 'Pridėti veiklą';
         } else {
-            // Add new activity
-            const activity = {
-                day,
-                startTime,
-                endTime,
-                name,
-                desc,
-                availability,
-                id: Date.now()
-            };
-            activities.push(activity);
+            // Add new activities for each selected day
+            selectedDays.forEach(day => {
+                const activity = {
+                    day,
+                    startTime,
+                    endTime,
+                    name,
+                    desc,
+                    availability,
+                    id: Date.now() + Math.random() // Unique ID for each instance
+                };
+                activities.push(activity);
+            });
         }
         
         updateActivitiesList();
@@ -86,23 +93,39 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        // Group activities by their base ID (for display purposes)
+        const groupedActivities = {};
         activities.forEach(activity => {
+            const baseId = Math.floor(activity.id); // Get the base ID without the decimal
+            if (!groupedActivities[baseId]) {
+                groupedActivities[baseId] = {
+                    ...activity,
+                    days: [activity.day],
+                    instances: [activity]
+                };
+            } else {
+                groupedActivities[baseId].days.push(activity.day);
+                groupedActivities[baseId].instances.push(activity);
+            }
+        });
+        
+        Object.values(groupedActivities).forEach(group => {
             const activityItem = document.createElement('div');
-            activityItem.className = `activity-item activity-${activity.availability}`;
-            activityItem.dataset.id = activity.id;
+            activityItem.className = `activity-item activity-${group.availability}`;
+            activityItem.dataset.id = group.id;
             
             activityItem.innerHTML = `
                 <div class="activity-details">
-                    <div class="activity-day">${activity.day}</div>
-                    <div class="activity-time">${formatTime(activity.startTime)} - ${formatTime(activity.endTime)}</div>
-                    <div class="activity-name">${activity.name}</div>
-                    ${activity.desc ? `<div class="activity-description">${activity.desc}</div>` : ''}
-                    <div class="activity-availability">${formatAvailability(activity.availability)}</div>
+                    <div class="activity-day">${group.days.join(', ')}</div>
+                    <div class="activity-time">${formatTime(group.startTime)} - ${formatTime(group.endTime)}</div>
+                    <div class="activity-name">${group.name}</div>
+                    ${group.desc ? `<div class="activity-description">${group.desc}</div>` : ''}
+                    <div class="activity-availability">${formatAvailability(group.availability)}</div>
                 </div>
                 <div class="activity-actions">
-                    <button class="copy-activity" data-id="${activity.id}" title="Copy to another day">Kopijuoti</button>
-                    <button class="edit-activity" data-id="${activity.id}">Redaguoti</button>
-                    <button class="remove-activity" data-id="${activity.id}">×</button>
+                    <button class="copy-activity" data-id="${group.id}" title="Copy to another day">Kopijuoti</button>
+                    <button class="edit-activity" data-id="${group.id}">Redaguoti</button>
+                    <button class="remove-activity" data-id="${group.id}">×</button>
                 </div>
             `;
             
@@ -112,21 +135,21 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add event listeners for all action buttons
         document.querySelectorAll('.remove-activity').forEach(btn => {
             btn.addEventListener('click', function() {
-                const id = parseInt(this.dataset.id);
+                const id = parseFloat(this.dataset.id);
                 removeActivity(id);
             });
         });
         
         document.querySelectorAll('.edit-activity').forEach(btn => {
             btn.addEventListener('click', function() {
-                const id = parseInt(this.dataset.id);
+                const id = parseFloat(this.dataset.id);
                 editActivity(id);
             });
         });
         
         document.querySelectorAll('.copy-activity').forEach(btn => {
             btn.addEventListener('click', function() {
-                const id = parseInt(this.dataset.id);
+                const id = parseFloat(this.dataset.id);
                 copyActivity(id);
             });
         });
@@ -135,71 +158,89 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to remove an activity
     function removeActivity(id) {
         if (confirm('Ar tikrai norite pašalinti šią veiklą?')) {
-            activities = activities.filter(activity => activity.id !== id);
+            activities = activities.filter(activity => Math.floor(activity.id) !== Math.floor(id));
             updateActivitiesList();
         }
     }
     
     // Function to edit an activity
     function editActivity(id) {
-        const activity = activities.find(activity => activity.id === id);
-        if (!activity) return;
+        // Find all activities with this base ID
+        const activityInstances = activities.filter(activity => Math.floor(activity.id) === Math.floor(id));
+        if (activityInstances.length === 0) return;
         
-        document.getElementById('activity-day').value = activity.day;
-        document.getElementById('start-time').value = activity.startTime;
-        document.getElementById('end-time').value = activity.endTime;
-        document.getElementById('activity-name').value = activity.name;
-        document.getElementById('activity-desc').value = activity.desc;
-        document.getElementById('availability').value = activity.availability;
+        // Take the first instance to populate the form
+        const firstInstance = activityInstances[0];
+        
+        // Uncheck all day checkboxes first
+        document.querySelectorAll('input[name="activity-days"]').forEach(cb => {
+            cb.checked = false;
+        });
+        
+        // Check the boxes for the days this activity occurs
+        activityInstances.forEach(instance => {
+            const checkbox = document.querySelector(`input[name="activity-days"][value="${instance.day}"]`);
+            if (checkbox) checkbox.checked = true;
+        });
+        
+        document.getElementById('start-time').value = firstInstance.startTime;
+        document.getElementById('end-time').value = firstInstance.endTime;
+        document.getElementById('activity-name').value = firstInstance.name;
+        document.getElementById('activity-desc').value = firstInstance.desc;
+        document.getElementById('availability').value = firstInstance.availability;
         
         currentlyEditingId = id;
         addActivityBtn.textContent = 'Atnaujinti veiklą';
         
-        // Scroll to form
-        document.getElementById('activity-form').scrollIntoView({ behavior: 'smooth' });
+        // Scroll to form with smooth animation
+        const formSection = document.querySelector('.form-section');
+        formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        // Highlight the form section temporarily
+        formSection.style.boxShadow = '0 0 0 0px #444';
+        setTimeout(() => {
+            formSection.style.boxShadow = 'none';
+        }, 2000);
     }
     
     // Function to copy an activity to another day
     function copyActivity(id) {
-        const originalActivity = activities.find(activity => activity.id === id);
-        if (!originalActivity) return;
+        const originalActivities = activities.filter(activity => Math.floor(activity.id) === Math.floor(id));
+        if (originalActivities.length === 0) return;
         
-        // Create a copy of the original activity with a new ID
-        const copiedActivity = {
-            ...originalActivity,
-            id: Date.now() // Generate new ID for the copy
-        };
+        // Prompt user to select new days
+        const newDaysInput = prompt("Įveskite dienas, į kurias norite nukopijuoti veiklą (atskirtas kableliais):\nPavyzdys: Pirmadienis, Trečiadienis, Penktadienis");
+        if (!newDaysInput) return; // User canceled
         
-        // Prompt user to select a new day
-        const newDay = prompt("Pasirinkite naują dieną kopijai:", originalActivity.day);
-        if (!newDay) return; // User canceled
+        const newDays = newDaysInput.split(',').map(day => day.trim());
         
-        // Validate the day
+        // Validate the days
         const validDays = ['Pirmadienis', 'Antradienis', 'Trečiadienis', 'Ketvirtadienis', 'Penktadienis', 'Šeštadienis', 'Sekmadienis'];
-        if (!validDays.includes(newDay)) {
-            alert('Netinkama diena. Pasirinkite vieną iš: Pirmadienis, Antradienis, Trečiadienis, Ketvirtadienis, Penktadienis, Šeštadienis, Sekmadienis');
+        const invalidDays = newDays.filter(day => !validDays.includes(day));
+        
+        if (invalidDays.length > 0) {
+            alert(`Netinkamos dienos: ${invalidDays.join(', ')}\nGalimos dienos: Pirmadienis, Antradienis, Trečiadienis, Ketvirtadienis, Penktadienis, Šeštadienis, Sekmadienis`);
             return;
         }
         
-        // Update the day and add to activities array
-        copiedActivity.day = newDay;
-        activities.push(copiedActivity);
+        // Create copies for each new day
+        originalActivities.forEach(originalActivity => {
+            newDays.forEach(day => {
+                const copiedActivity = {
+                    ...originalActivity,
+                    day: day,
+                    id: Date.now() + Math.random() // New unique ID for each copy
+                };
+                activities.push(copiedActivity);
+            });
+        });
+        
         updateActivitiesList();
         
-        // Scroll to the new activity in the list
+        // Scroll to the bottom of the activities list
         setTimeout(() => {
-            const newActivityElement = document.querySelector(`.activity-item[data-id="${copiedActivity.id}"]`);
-            if (newActivityElement) {
-                newActivityElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                
-                // Highlight the new activity temporarily
-                newActivityElement.style.backgroundColor = document.body.classList.contains('dark-mode') 
-                    ? 'rgba(74, 111, 165, 0.3)' 
-                    : 'rgba(74, 111, 165, 0.2)';
-                setTimeout(() => {
-                    newActivityElement.style.backgroundColor = '';
-                }, 2000);
-            }
+            const activitiesList = document.getElementById('activities-list');
+            activitiesList.scrollTop = activitiesList.scrollHeight;
         }, 100);
     }
     
@@ -220,6 +261,9 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('start-time').value = '';
         document.getElementById('end-time').value = '';
         document.getElementById('availability').value = 'available';
+        document.querySelectorAll('input[name="activity-days"]').forEach(cb => {
+            cb.checked = false;
+        });
         currentlyEditingId = null;
         addActivityBtn.textContent = 'Pridėti veiklą';
     }
