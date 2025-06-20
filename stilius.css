@@ -454,4 +454,45 @@ background: none;
     margin-left: auto;
 }
 
+/* [Previous CSS remains the same until the end, add these new styles at the bottom] */
+
+.days-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.day-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: #a2988e;
+    cursor: pointer;
+    padding: 5px 8px;
+    border-radius: 4px;
+    background-color: #333;
+    transition: all 0.3s ease;
+}
+
+.dark-mode .day-checkbox {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.day-checkbox input[type="checkbox"] {
+    margin: 0;
+    width: auto;
+    cursor: pointer;
+}
+
+.day-checkbox:hover {
+    background-color: #444;
+}
+
+.dark-mode .day-checkbox:hover {
+    background-color: #e0e0e0;
+}
+
 /* [Rest of your existing CSS remains the same...] */
