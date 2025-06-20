@@ -139,6 +139,7 @@ input:focus, select:focus, textarea:focus {
 
 .activities-list {
     margin-top: 20px;
+    font-family:'lemon/milk light',sans-serif;
 }
 
 .activity-item {
