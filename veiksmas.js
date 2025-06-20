@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
             activityItem.innerHTML = `
                 <div class="activity-details">
                     <div class="activity-day">${group.days.join(', ')}</div>
-                    <div class="activity-time">${formatTime(group.startTime)} - ${formatTime(group.endTime)}</div>
+                    <div class="activity-time">${group.startTime} - ${group.endTime}</div>
                     <div class="activity-name">${group.name}</div>
                     ${group.desc ? `<div class="activity-description">${group.desc}</div>` : ''}
                     <div class="activity-availability">${formatAvailability(group.availability)}</div>
@@ -277,19 +277,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addActivityBtn.textContent = 'Pridėti veiklą';
     }
     
-    // Function to format time (HH:MM to H:MM AM/PM)
-    function formatTime(timeString) {
-        if (!timeString) return '';
-        
-        const [hours, minutes] = timeString.split(':');
-        let hour = parseInt(hours);
-        const ampm = hour >= 12 ? 'PM' : 'AM';
-        hour = hour % 12;
-        hour = hour ? hour : 12; // Convert 0 to 12
-        return `${hour}:${minutes} ${ampm}`;
-    }
-    
-    // Function to generate calendar
+    // Function to generate calendar with aligned activities
     function generateCalendar() {
         document.querySelectorAll('.calendar-day').forEach(dayElement => {
             const dayHeader = dayElement.querySelector('.day-header');
@@ -302,10 +290,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        // First, sort all activities by start time
         const sortedActivities = [...activities].sort((a, b) => {
             return a.startTime.localeCompare(b.startTime);
         });
         
+        // Group activities by day
         const activitiesByDay = {
             'Pirmadienis': [],
             'Antradienis': [],
@@ -320,23 +310,62 @@ document.addEventListener('DOMContentLoaded', function() {
             activitiesByDay[activity.day].push(activity);
         });
         
-        for (const day in activitiesByDay) {
-            const dayActivities = activitiesByDay[day];
-            const dayElement = Array.from(document.querySelectorAll('.calendar-day'))
-                .find(el => el.querySelector('.day-header').textContent === day);
+        // Find all unique time slots across all days
+        const allTimeSlots = new Set();
+        sortedActivities.forEach(activity => {
+            allTimeSlots.add(`${activity.startTime}-${activity.endTime}`);
+        });
+        
+        // Create a grid structure to align activities
+        const timeSlotArray = Array.from(allTimeSlots).sort();
+        
+        // For each time slot, find activities in each day
+        timeSlotArray.forEach(timeSlot => {
+            const [startTime, endTime] = timeSlot.split('-');
             
-            dayActivities.forEach(activity => {
-                const activityElement = document.createElement('div');
-                activityElement.className = `calendar-activity activity-${activity.availability}`;
-                activityElement.innerHTML = `
-                    <div class="activity-time-display">${formatTime(activity.startTime)} - ${formatTime(activity.endTime)}</div>
-                    <div class="activity-name-display">${activity.name}</div>
-                    ${activity.desc ? `<div class="activity-desc-display" style="margin-top: 3px; font-size: 10px;">${activity.desc}</div>` : ''}
-                    <div class="availability-badge">${formatAvailability(activity.availability)}</div>
-                `;
-                dayElement.appendChild(activityElement);
-            });
-        }
+            // Find the maximum height needed for this time slot across all days
+            let maxItems = 1;
+            for (const day in activitiesByDay) {
+                const dayActivities = activitiesByDay[day].filter(a => 
+                    a.startTime === startTime && a.endTime === endTime
+                );
+                if (dayActivities.length > maxItems) {
+                    maxItems = dayActivities.length;
+                }
+            }
+            
+            // Add activities to each day, creating aligned rows
+            for (let i = 0; i < maxItems; i++) {
+                for (const day in activitiesByDay) {
+                    const dayElement = Array.from(document.querySelectorAll('.calendar-day'))
+                        .find(el => el.querySelector('.day-header').textContent === day);
+                    
+                    const dayActivities = activitiesByDay[day].filter(a => 
+                        a.startTime === startTime && a.endTime === endTime
+                    );
+                    
+                    if (i < dayActivities.length) {
+                        const activity = dayActivities[i];
+                        const activityElement = document.createElement('div');
+                        activityElement.className = `calendar-activity activity-${activity.availability}`;
+                        activityElement.innerHTML = `
+                            <div class="activity-time-display">${activity.startTime} - ${activity.endTime}</div>
+                            <div class="activity-name-display">${activity.name}</div>
+                            ${activity.desc ? `<div class="activity-desc-display" style="margin-top: 3px; font-size: 10px;">${activity.desc}</div>` : ''}
+                            <div class="availability-badge">${formatAvailability(activity.availability)}</div>
+                        `;
+                        dayElement.appendChild(activityElement);
+                    } else if (i === 0) {
+                        // Add empty placeholder to maintain alignment
+                        const emptyElement = document.createElement('div');
+                        emptyElement.className = 'calendar-activity empty-activity';
+                        emptyElement.style.visibility = 'hidden';
+                        emptyElement.innerHTML = `<div style="height: 1px;"></div>`;
+                        dayElement.appendChild(emptyElement);
+                    }
+                }
+            }
+        });
     }
     
     // Function to download calendar as PNG
@@ -389,6 +418,11 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        if (scheduleName === "naujas tvarkaraštis") {
+            alert('This name is reserved for the empty schedule');
+            return;
+        }
+        
         const scheduleData = {
             name: scheduleName,
             activities: [...activities], // Copy of current activities
@@ -434,6 +468,15 @@ document.addEventListener('DOMContentLoaded', function() {
             dayElement.appendChild(dayHeader);
         });
         
+        if (scheduleName === "naujas tvarkaraštis") {
+            activities = [];
+            currentScheduleName = null;
+            localStorage.removeItem('currentScheduleName');
+            localStorage.removeItem('currentActivities');
+            updateActivitiesList();
+            return;
+        }
+        
         const savedSchedules = JSON.parse(localStorage.getItem('savedSchedules')) || [];
         const scheduleToLoad = savedSchedules.find(s => s.name === scheduleName);
         
@@ -450,6 +493,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to delete a saved schedule
     function deleteSchedule(scheduleName, event) {
         if (event) event.stopPropagation();
+        
+        if (scheduleName === "naujas tvarkaraštis") {
+            alert('Cannot delete the default empty schedule');
+            return;
+        }
         
         if (!confirm(`Are you sure you want to delete "${scheduleName}"?`)) {
             return;
@@ -477,8 +525,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const savedSchedules = JSON.parse(localStorage.getItem('savedSchedules')) || [];
         schedulesList.innerHTML = '';
         
+        // Always show "naujas tvarkaraštis" first
+        const newScheduleElement = document.createElement('div');
+        newScheduleElement.className = 'schedule-item';
+        
+        const newScheduleBtn = document.createElement('button');
+        newScheduleBtn.className = 'schedule-btn';
+        newScheduleBtn.textContent = 'naujas tvarkaraštis';
+        newScheduleBtn.addEventListener('click', () => loadSchedule('naujas tvarkaraštis'));
+        
+        newScheduleElement.appendChild(newScheduleBtn);
+        schedulesList.appendChild(newScheduleElement);
+        
         if (savedSchedules.length === 0) {
-            schedulesList.innerHTML = '<p style="color: #6E6761; font-size: 12px; text-align: center;">No saved schedules</p>';
             return;
         }
         
