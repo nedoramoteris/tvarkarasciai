@@ -278,96 +278,68 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Function to generate calendar with aligned activities
-    function generateCalendar() {
-        document.querySelectorAll('.calendar-day').forEach(dayElement => {
-            const dayHeader = dayElement.querySelector('.day-header');
-            dayElement.innerHTML = '';
-            dayElement.appendChild(dayHeader);
-        });
+   function generateCalendar() {
+    document.querySelectorAll('.calendar-day').forEach(dayElement => {
+        const dayHeader = dayElement.querySelector('.day-header');
+        dayElement.innerHTML = '';
+        dayElement.appendChild(dayHeader);
+    });
+
+    if (activities.length === 0) {
+        alert('No activities to display. Please add some activities first.');
+        return;
+    }
+
+    // Group activities by day
+    const activitiesByDay = {
+        'Pirmadienis': [],
+        'Antradienis': [],
+        'Trečiadienis': [],
+        'Ketvirtadienis': [],
+        'Penktadienis': [],
+        'Šeštadienis': [],
+        'Sekmadienis': []
+    };
+
+    // Sort activities by start time for each day
+    activities.forEach(activity => {
+        activitiesByDay[activity.day].push(activity);
+    });
+
+    // Sort activities within each day by start time
+    for (const day in activitiesByDay) {
+        activitiesByDay[day].sort((a, b) => a.startTime.localeCompare(b.startTime));
+    }
+
+    // Find all unique time slots across all days
+    const allTimeSlots = new Set();
+    activities.forEach(activity => {
+        allTimeSlots.add(`${activity.startTime}-${activity.endTime}`);
+    });
+
+    // Create a grid structure to align activities
+    const timeSlotArray = Array.from(allTimeSlots).sort();
+
+    // For each day, add activities in order without gaps
+    for (const day in activitiesByDay) {
+        const dayElement = Array.from(document.querySelectorAll('.calendar-day'))
+            .find(el => el.querySelector('.day-header').textContent === day);
         
-        if (activities.length === 0) {
-            alert('No activities to display. Please add some activities first.');
-            return;
-        }
+        const dayActivities = activitiesByDay[day];
         
-        // First, sort all activities by start time
-        const sortedActivities = [...activities].sort((a, b) => {
-            return a.startTime.localeCompare(b.startTime);
-        });
-        
-        // Group activities by day
-        const activitiesByDay = {
-            'Pirmadienis': [],
-            'Antradienis': [],
-            'Trečiadienis': [],
-            'Ketvirtadienis': [],
-            'Penktadienis': [],
-            'Šeštadienis': [],
-            'Sekmadienis': []
-        };
-        
-        sortedActivities.forEach(activity => {
-            activitiesByDay[activity.day].push(activity);
-        });
-        
-        // Find all unique time slots across all days
-        const allTimeSlots = new Set();
-        sortedActivities.forEach(activity => {
-            allTimeSlots.add(`${activity.startTime}-${activity.endTime}`);
-        });
-        
-        // Create a grid structure to align activities
-        const timeSlotArray = Array.from(allTimeSlots).sort();
-        
-        // For each time slot, find activities in each day
-        timeSlotArray.forEach(timeSlot => {
-            const [startTime, endTime] = timeSlot.split('-');
-            
-            // Find the maximum height needed for this time slot across all days
-            let maxItems = 1;
-            for (const day in activitiesByDay) {
-                const dayActivities = activitiesByDay[day].filter(a => 
-                    a.startTime === startTime && a.endTime === endTime
-                );
-                if (dayActivities.length > maxItems) {
-                    maxItems = dayActivities.length;
-                }
-            }
-            
-            // Add activities to each day, creating aligned rows
-            for (let i = 0; i < maxItems; i++) {
-                for (const day in activitiesByDay) {
-                    const dayElement = Array.from(document.querySelectorAll('.calendar-day'))
-                        .find(el => el.querySelector('.day-header').textContent === day);
-                    
-                    const dayActivities = activitiesByDay[day].filter(a => 
-                        a.startTime === startTime && a.endTime === endTime
-                    );
-                    
-                    if (i < dayActivities.length) {
-                        const activity = dayActivities[i];
-                        const activityElement = document.createElement('div');
-                        activityElement.className = `calendar-activity activity-${activity.availability}`;
-                        activityElement.innerHTML = `
-                            <div class="activity-time-display">${activity.startTime} - ${activity.endTime}</div>
-                            <div class="activity-name-display">${activity.name}</div>
-                            ${activity.desc ? `<div class="activity-desc-display" style="margin-top: 3px; font-size: 10px;">${activity.desc}</div>` : ''}
-                            <div class="availability-badge">${formatAvailability(activity.availability)}</div>
-                        `;
-                        dayElement.appendChild(activityElement);
-                    } else if (i === 0) {
-                        // Add empty placeholder to maintain alignment
-                        const emptyElement = document.createElement('div');
-                        emptyElement.className = 'calendar-activity empty-activity';
-                        emptyElement.style.visibility = 'hidden';
-                        emptyElement.innerHTML = `<div style="height: 1px;"></div>`;
-                        dayElement.appendChild(emptyElement);
-                    }
-                }
-            }
+        dayActivities.forEach(activity => {
+            const activityElement = document.createElement('div');
+            activityElement.className = `calendar-activity activity-${activity.availability}`;
+            activityElement.innerHTML = `
+                <div class="activity-time-display">${activity.startTime} - ${activity.endTime}</div>
+                <div class="activity-name-display">${activity.name}</div>
+                ${activity.desc ? `<div class="activity-desc-display" style="margin-top: 3px; font-size: 10px;">${activity.desc}</div>` : ''}
+                <div class="availability-badge">${formatAvailability(activity.availability)}</div>
+            `;
+            dayElement.appendChild(activityElement);
         });
     }
-    
+} 
     // Function to download calendar as PNG
     function downloadCalendarAsPNG() {
         const calendarSection = document.querySelector('.calendar-section');
