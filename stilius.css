@@ -427,3 +427,31 @@ background: none;
 .edit-activity:hover {
     color: #aba19e;
 }
+
+.copy-activity {
+    background: none;
+  color: #6E6761;
+  font-weight:bold;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'lemon/milk light', sans-serif;
+    font-size: 10px;
+    transition: background-color 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.copy-activity:hover {
+    color: #aba19e;
+}
+
+.activity-actions {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: auto;
+}
+
+/* [Rest of your existing CSS remains the same...] */
