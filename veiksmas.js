@@ -100,6 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="activity-availability">${formatAvailability(activity.availability)}</div>
                 </div>
                 <div class="activity-actions">
+                    <button class="copy-activity" data-id="${activity.id}" title="Copy to another day">Kopijuoti</button>
                     <button class="edit-activity" data-id="${activity.id}">Redaguoti</button>
                     <button class="remove-activity" data-id="${activity.id}">×</button>
                 </div>
@@ -108,11 +109,11 @@ document.addEventListener('DOMContentLoaded', function() {
             activitiesList.appendChild(activityItem);
         });
         
+        // Add event listeners for all action buttons
         document.querySelectorAll('.remove-activity').forEach(btn => {
             btn.addEventListener('click', function() {
                 const id = parseInt(this.dataset.id);
-                activities = activities.filter(activity => activity.id !== id);
-                updateActivitiesList();
+                removeActivity(id);
             });
         });
         
@@ -122,6 +123,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 editActivity(id);
             });
         });
+        
+        document.querySelectorAll('.copy-activity').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = parseInt(this.dataset.id);
+                copyActivity(id);
+            });
+        });
+    }
+    
+    // Function to remove an activity
+    function removeActivity(id) {
+        if (confirm('Ar tikrai norite pašalinti šią veiklą?')) {
+            activities = activities.filter(activity => activity.id !== id);
+            updateActivitiesList();
+        }
     }
     
     // Function to edit an activity
@@ -141,6 +157,50 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Scroll to form
         document.getElementById('activity-form').scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // Function to copy an activity to another day
+    function copyActivity(id) {
+        const originalActivity = activities.find(activity => activity.id === id);
+        if (!originalActivity) return;
+        
+        // Create a copy of the original activity with a new ID
+        const copiedActivity = {
+            ...originalActivity,
+            id: Date.now() // Generate new ID for the copy
+        };
+        
+        // Prompt user to select a new day
+        const newDay = prompt("Pasirinkite naują dieną kopijai:", originalActivity.day);
+        if (!newDay) return; // User canceled
+        
+        // Validate the day
+        const validDays = ['Pirmadienis', 'Antradienis', 'Trečiadienis', 'Ketvirtadienis', 'Penktadienis', 'Šeštadienis', 'Sekmadienis'];
+        if (!validDays.includes(newDay)) {
+            alert('Netinkama diena. Pasirinkite vieną iš: Pirmadienis, Antradienis, Trečiadienis, Ketvirtadienis, Penktadienis, Šeštadienis, Sekmadienis');
+            return;
+        }
+        
+        // Update the day and add to activities array
+        copiedActivity.day = newDay;
+        activities.push(copiedActivity);
+        updateActivitiesList();
+        
+        // Scroll to the new activity in the list
+        setTimeout(() => {
+            const newActivityElement = document.querySelector(`.activity-item[data-id="${copiedActivity.id}"]`);
+            if (newActivityElement) {
+                newActivityElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                
+                // Highlight the new activity temporarily
+                newActivityElement.style.backgroundColor = document.body.classList.contains('dark-mode') 
+                    ? 'rgba(74, 111, 165, 0.3)' 
+                    : 'rgba(74, 111, 165, 0.2)';
+                setTimeout(() => {
+                    newActivityElement.style.backgroundColor = '';
+                }, 2000);
+            }
+        }, 100);
     }
     
     // Function to format availability text
