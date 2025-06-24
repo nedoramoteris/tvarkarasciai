@@ -1,3 +1,6 @@
+:root {
+  --daddy-gradient: linear-gradient(to right, #444b44, #9c8672);}
+
 body, html {
 
     font-family: 'Montserrat', sans-serif;
@@ -30,7 +33,7 @@ h1 {
     font-size: 1.8em;
     color: #6E6761;
     margin-bottom: 30px;
-    background-image: linear-gradient(to right, #A8B9BF, #BFA980, #b58d84);
+    background-image: var(--daddy-gradient);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -225,7 +228,7 @@ text-align:justify;}
     font-family: 'Lemon/Milk light', sans-serif;
     letter-spacing: 2px;
     font-size: 16px;
-    background-image: linear-gradient(to right, #A8B9BF, #BFA980, #b58d84);
+    background-image: var(--daddy-gradient);
     border-radius:7px;
   padding:6px;
   color:white;
