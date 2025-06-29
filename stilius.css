@@ -333,6 +333,7 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
 .time-slot.has-activity .time-label {
     opacity: 1;
     font-size: 9px;
+
 }
 
 .time-content {
@@ -368,6 +369,11 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
 .time-slot.has-activity, 
 .time-slot.occupied-slot {
     background-color: #3a3936 !important;
+    border-radius:7px;
+  padding-right:6px;
+  padding-left:6px;
+  margin-right:-10px;
+  margin-left:-10px;
 }
 
 .dark-mode .time-slot.has-activity,
