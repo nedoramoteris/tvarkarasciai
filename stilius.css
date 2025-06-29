@@ -221,14 +221,14 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
 
 .activity-description {
     margin-top: 5px !important;
-    font-size: 13px;
+    margin-bottom:5px !important;
+
 }
 
 .activity-desc-display {
     font-size: 10px !important;
     font-family: 'Montserrat', sans-serif;
     text-align: justify;
-  margin-bottom:5px;
 }
 
 .remove-activity {
