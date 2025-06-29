@@ -416,6 +416,298 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
+
+        // After generating the calendar, show the HTML export button
+        showHtmlExportButton();
+    }
+
+    // Function to show HTML export button
+    function showHtmlExportButton() {
+        const calendarActions = document.querySelector('.calendar-actions');
+        
+        // Check if the HTML export button already exists
+        if (!document.getElementById('export-html-btn')) {
+            const exportHtmlBtn = document.createElement('button');
+            exportHtmlBtn.id = 'export-html-btn';
+            exportHtmlBtn.className = 'download-calendar';
+            exportHtmlBtn.textContent = 'KOPIJUOTI HTML';
+            exportHtmlBtn.addEventListener('click', exportCalendarAsHtml);
+            
+            // Insert after the download button
+            calendarActions.appendChild(exportHtmlBtn);
+        }
+    }
+
+    // Function to export calendar as HTML
+    function exportCalendarAsHtml() {
+        if (!activities.length) {
+            alert('Please generate your calendar first before exporting.');
+            return;
+        }
+
+        // Get the calendar section HTML
+        const calendarSection = document.querySelector('.calendar-section');
+        const calendarHtml = calendarSection.outerHTML;
+
+        // Get the current dark mode state
+        const isDarkMode = document.body.classList.contains('dark-mode');
+
+        // Create the full HTML document with embedded CSS
+        const fullHtml = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personažų tvarkaraštis</title>
+    <link href="https://fonts.cdnfonts.com/css/lemonmilk" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <style>
+${getCssForExport(isDarkMode)}
+    </style>
+</head>
+<body${isDarkMode ? ' class="dark-mode"' : ''}>
+    ${calendarHtml}
+</body>
+</html>
+        `;
+
+        // Create a textarea with the HTML code
+        const textarea = document.createElement('textarea');
+        textarea.value = fullHtml;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                alert('HTML code copied to clipboard! You can now paste it anywhere.');
+            } else {
+                throw new Error('Copy command failed');
+            }
+        } catch (err) {
+            // Fallback for browsers that don't support execCommand
+            alert('Press Ctrl+C to copy the HTML code');
+        } finally {
+            document.body.removeChild(textarea);
+        }
+    }
+
+    // Function to get CSS for export (simplified version of the main CSS)
+    function getCssForExport(isDarkMode) {
+        return `
+:root {
+  --daddy-gradient: linear-gradient(to right, #444b44, #9c8672);
+}
+
+body, html {
+    font-family: 'Montserrat', sans-serif;
+    background-color: ${isDarkMode ? 'white' : '#1c1c1b'};
+    color: ${isDarkMode ? '#333' : '#6E6761'};
+    padding: 20px;
+    margin: 0;
+}
+
+.calendar-section {
+    background: ${isDarkMode ? '#f5f5f5' : '#21211f'};
+    padding: 25px;
+    border-radius: 7px;
+    width: 100% !important;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.calendar-title {
+    font-family: 'Lemon/Milk light', sans-serif;
+    letter-spacing: 2px;
+    font-size: 16px;
+    background-image: var(--daddy-gradient);
+    border-radius: 7px;
+    padding: 6px;
+    color: white;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+}
+
+.calendar-day {
+    background-color: ${isDarkMode ? '#f0f0f0' : '#33312e'};
+    border-radius: 6px;
+    padding: 15px;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    min-height: 100px;
+}
+
+.day-header {
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid ${isDarkMode ? '#ddd' : '#444'};
+    color: ${isDarkMode ? '#666' : '#a2988e'};
+    font-family: 'lemon/milk light', sans-serif;
+}
+
+.time-slots-container {
+    display: grid;
+    grid-auto-rows: min-content;
+    gap: 2px;
+    align-content: start;
+}
+
+.time-slot {
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    gap: 5px;
+    min-height: auto;
+}
+
+.time-slot.empty-slot {
+    min-height: 10px;
+}
+
+.time-label {
+    font-size: 8px;
+    color: ${isDarkMode ? '#666' : '#6E6761'};
+    align-self: center;
+    opacity: 0.6;
+}
+
+.time-slot.has-activity .time-label {
+    opacity: 1;
+    font-size: 9px;
+    visibility: hidden;
+}
+
+.time-content {
+    position: relative;
+    min-height: 100%;
+}
+
+.calendar-activity {
+    border-radius: 7px !important;
+    position: relative;
+    width: 100%;
+    padding: 5px;
+    font-size: 11px;
+    background-color: ${isDarkMode ? '#e0e0e0' : '#3a3936'};
+    min-height: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 2px;
+    padding-bottom: 5px;
+}
+
+.activity-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-left: -35px;
+}
+
+.availability-badge-container {
+    margin-top: auto;
+    padding-top: 5px;
+}
+
+.time-slot.has-activity, 
+.time-slot.occupied-slot {
+    background-color: ${isDarkMode ? '#e0e0e0' : '#3a3936'} !important;
+    border-radius: 7px;
+    padding-right: 6px;
+    padding-left: 6px;
+    margin-right: -10px;
+    margin-left: -10px;
+}
+
+.activity-time-display {
+    color: ${isDarkMode ? '#666' : '#a59f92'} !important;
+    font-family: 'Lemon/Milk light', sans-serif;
+    letter-spacing: 1px;
+    font-size: 10px !important;
+    margin-bottom: 2px;
+}
+
+.activity-name-display {
+    font-weight: bold;
+    font-family: 'Lemon/Milk light', sans-serif;
+    letter-spacing: 1px;
+    font-size: 12px !important;
+    margin-bottom: 3px;
+    color: ${isDarkMode ? '#666' : '#a2988e'};
+}
+
+.activity-desc-display {
+    font-size: 10px !important;
+    font-family: 'Montserrat', sans-serif;
+    text-align: justify;
+    margin-bottom: 3px;
+}
+
+.availability-badge {
+    margin-bottom: 5px;
+    margin-left: -35px;
+}
+
+.availability-badge-unavailable {
+    background-color: #934343 !important;
+    border-left: 4px solid #c75858 !important;
+}
+
+.availability-badge-available {
+    background-color: #4b6052 !important;
+    border-left: 4px solid #6ba06c !important;
+}
+
+.availability-badge-somewhat-unavailable {
+    background-color: #a2844c !important;
+    border-left: 4px solid #d3a755 !important;
+}
+
+.availability-badge-unavailable, 
+.availability-badge-available, 
+.availability-badge-somewhat-unavailable {
+    padding: 4px;
+    border-radius: 7px;
+    margin-top: 4px;
+    color: white;
+    text-transform: uppercase;
+    font-family: 'Lemon/Milk light', sans-serif;
+    letter-spacing: 1px;
+    font-size: 7px !important;
+}
+
+@media (max-width: 768px) {
+    .calendar-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .calendar-day {
+        width: auto;
+    }
+    
+    .time-slots-container {
+        grid-auto-rows: min-content;
+    }
+    
+    .time-label {
+        font-size: 7px;
+    }
+}
+        `;
     }
     
     // Function to download calendar as PNG
