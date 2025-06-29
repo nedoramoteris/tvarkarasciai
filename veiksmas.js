@@ -277,163 +277,136 @@ document.addEventListener('DOMContentLoaded', function() {
         addActivityBtn.textContent = 'Pridėti veiklą';
     }
     
-    // Function to generate calendar with hourly slots starting at 1 AM
-    function generateCalendar() {
-        // Clear existing calendar
-        document.querySelectorAll('.calendar-day').forEach(dayElement => {
-            const dayHeader = dayElement.querySelector('.day-header');
-            dayElement.innerHTML = '';
-            dayElement.appendChild(dayHeader);
-        });
+    // Function to generate calendar with compact slots
+   // Replace the generateCalendar function with this version
+function generateCalendar() {
+    // Clear existing calendar
+    document.querySelectorAll('.calendar-day').forEach(dayElement => {
+        const dayHeader = dayElement.querySelector('.day-header');
+        dayElement.innerHTML = '';
+        dayElement.appendChild(dayHeader);
+    });
 
-        if (activities.length === 0) {
-            alert('No activities to display. Please add some activities first.');
-            return;
-        }
+    if (activities.length === 0) {
+        alert('No activities to display. Please add some activities first.');
+        return;
+    }
 
-        // Group activities by day
-        const activitiesByDay = {
-            'Pirmadienis': [],
-            'Antradienis': [],
-            'Trečiadienis': [],
-            'Ketvirtadienis': [],
-            'Penktadienis': [],
-            'Šeštadienis': [],
-            'Sekmadienis': []
-        };
+    // Group activities by day
+    const activitiesByDay = {
+        'Pirmadienis': [],
+        'Antradienis': [],
+        'Trečiadienis': [],
+        'Ketvirtadienis': [],
+        'Penktadienis': [],
+        'Šeštadienis': [],
+        'Sekmadienis': []
+    };
 
-        activities.forEach(activity => {
-            activitiesByDay[activity.day].push(activity);
-        });
+    activities.forEach(activity => {
+        activitiesByDay[activity.day].push(activity);
+    });
 
-        // For each day, create time slots starting at 1 AM
-        for (const day in activitiesByDay) {
-            const dayActivities = activitiesByDay[day];
-            if (dayActivities.length === 0) continue; // Skip days with no activities
+    // For each day, create time slots starting at 1 AM (01:00) to 1 AM next day (24 hours)
+    for (const day in activitiesByDay) {
+        const dayActivities = activitiesByDay[day];
+        const dayElement = Array.from(document.querySelectorAll('.calendar-day'))
+            .find(el => el.querySelector('.day-header').textContent === day);
+        
+        if (!dayElement) continue;
 
-            const dayElement = Array.from(document.querySelectorAll('.calendar-day'))
-                .find(el => el.querySelector('.day-header').textContent === day);
+        // Create a container for the time slots with proper grid layout
+        const timeSlotsContainer = document.createElement('div');
+        timeSlotsContainer.className = 'time-slots-container';
+        dayElement.appendChild(timeSlotsContainer);
+
+        // Create all time slots (48 slots for 30-minute intervals)
+        let currentHour = 1;
+        let currentMinute = 0;
+        let totalSlots = 0;
+
+        while (totalSlots < 48) {
+            const timeSlot = document.createElement('div');
+            timeSlot.className = 'time-slot empty-slot';
             
-            if (!dayElement) continue;
+            const formattedTime = currentHour.toString().padStart(2, '0') + ':' + 
+                                 currentMinute.toString().padStart(2, '0');
             
-            // Create time slots starting at 1 AM (01:00) to 1 AM next day (24 hours)
-            let currentHour = 1; // Start at 1 AM
-            let currentMinute = 0;
-            let totalSlots = 0;
+            timeSlot.innerHTML = `
+                <div class="time-label">${formattedTime}</div>
+                <div class="time-content"></div>
+            `;
             
-            // Create slots for the entire day (48 half-hour slots)
-            while (totalSlots < 48) {
-                const timeSlot = document.createElement('div');
-                timeSlot.className = 'time-slot';
-                
-                const formattedTime = currentHour.toString().padStart(2, '0') + ':' + 
-                                     currentMinute.toString().padStart(2, '0');
-                
-                timeSlot.innerHTML = `
-                    <div class="time-label">${formattedTime}</div>
-                    <div class="time-content"></div>
-                `;
-                
-                dayElement.appendChild(timeSlot);
-                
-                // Increment time by 30 minutes
-                currentMinute += 30;
-                if (currentMinute >= 60) {
-                    currentMinute = 0;
-                    currentHour += 1;
-                }
-                if (currentHour >= 24) {
-                    currentHour = 0;
-                }
-                
-                totalSlots++;
+            // Set grid row position based on time
+            timeSlot.style.gridRow = totalSlots + 1;
+            timeSlotsContainer.appendChild(timeSlot);
+
+            // Increment time by 30 minutes
+            currentMinute += 30;
+            if (currentMinute >= 60) {
+                currentMinute = 0;
+                currentHour += 1;
+            }
+            if (currentHour >= 24) {
+                currentHour = 0;
             }
             
-            // Place activities in their correct time slots
-            dayActivities.forEach(activity => {
-                const [startHour, startMinute] = activity.startTime.split(':').map(Number);
-                const [endHour, endMinute] = activity.endTime.split(':').map(Number);
-                
-                // Calculate which time slots this activity spans
-                const allSlots = Array.from(dayElement.querySelectorAll('.time-slot'));
-                
-                // Find the starting slot
-                let startSlotIndex = -1;
-                for (let i = 0; i < allSlots.length; i++) {
-                    const slotTime = allSlots[i].querySelector('.time-label').textContent;
-                    const [slotHour, slotMinute] = slotTime.split(':').map(Number);
-                    
-                    if ((slotHour > startHour) || 
-                        (slotHour === startHour && slotMinute >= startMinute)) {
-                        startSlotIndex = i;
-                        break;
-                    }
-                }
-                
-                // Find the ending slot
-                let endSlotIndex = allSlots.length;
-                for (let i = 0; i < allSlots.length; i++) {
-                    const slotTime = allSlots[i].querySelector('.time-label').textContent;
-                    const [slotHour, slotMinute] = slotTime.split(':').map(Number);
-                    
-                    if ((slotHour > endHour) || 
-                        (slotHour === endHour && slotMinute >= endMinute)) {
-                        endSlotIndex = i;
-                        break;
-                    }
-                }
-                
-                // Handle activities that span midnight (end time is next day)
-                if (endHour < startHour || (endHour === startHour && endMinute < startMinute)) {
-                    endSlotIndex = allSlots.length; // Extend to end of day
-                }
-                
-                if (startSlotIndex === -1 || endSlotIndex <= startSlotIndex) return;
-                
-                const timeSlots = allSlots.slice(startSlotIndex, endSlotIndex);
-                
-                // Create activity element
-                const activityElement = document.createElement('div');
-                activityElement.className = `calendar-activity activity-${activity.availability}`;
-                activityElement.innerHTML = `
-                    <div class="activity-time-display">${activity.startTime} - ${activity.endTime}</div>
-                    <div class="activity-name-display">${activity.name}</div>
-                    ${activity.desc ? `<div class="activity-desc-display">${activity.desc}</div>` : ''}
-                    <div class="availability-badge">${formatAvailability(activity.availability)}</div>
-                `;
-                
-                // Calculate how many slots this activity spans
-                const slotSpan = endSlotIndex - startSlotIndex;
-                
-                // Add to the first time slot and set grid row span
-                const firstSlotContent = timeSlots[0].querySelector('.time-content');
-                firstSlotContent.appendChild(activityElement);
-                activityElement.style.gridRow = `span ${slotSpan}`;
-                
-                // Calculate the height needed for the content
-                const contentHeight = activityElement.scrollHeight;
-                const minSlotHeight = 30; // Minimum height for each slot
-                const slotsNeeded = Math.ceil(contentHeight / minSlotHeight);
-                
-                // If the content needs more space than the time span provides
-                if (slotsNeeded > slotSpan) {
-                    activityElement.style.gridRow = `span ${slotsNeeded}`;
-                    
-                    // Mark subsequent slots as occupied
-                    for (let i = 1; i < slotsNeeded; i++) {
-                        if (timeSlots[i]) {
-                            timeSlots[i].classList.add('occupied-slot');
-                        }
-                    }
-                } else {
-                    // Mark subsequent slots as occupied based on time span
-                    for (let i = 1; i < timeSlots.length; i++) {
-                        timeSlots[i].classList.add('occupied-slot');
-                    }
-                }
-            });
+            totalSlots++;
         }
+
+        // Place activities in their correct time slots
+        dayActivities.forEach(activity => {
+            const [startHour, startMinute] = activity.startTime.split(':').map(Number);
+            const [endHour, endMinute] = activity.endTime.split(':').map(Number);
+            
+            // Calculate starting slot position
+            let startSlot = ((startHour - 1) * 2) + Math.floor(startMinute / 30);
+            if (startHour < 1) startSlot += 48; // Handle overnight
+            
+            // Calculate ending slot position
+            let endSlot = ((endHour - 1) * 2) + Math.ceil(endMinute / 30);
+            if (endHour < 1) endSlot += 48; // Handle overnight
+            
+            // Handle activities that span midnight
+            if (endSlot < startSlot) {
+                endSlot = 48;
+            }
+            
+            // Get the starting time slot
+            const startingSlot = timeSlotsContainer.children[startSlot];
+            if (!startingSlot) return;
+            
+            // Create activity element
+            const activityElement = document.createElement('div');
+            activityElement.className = `calendar-activity activity-${activity.availability}`;
+            activityElement.innerHTML = `
+                <div class="activity-time-display">${activity.startTime} - ${activity.endTime}</div>
+                <div class="activity-name-display">${activity.name}</div>
+                ${activity.desc ? `<div class="activity-desc-display">${activity.desc}</div>` : ''}
+                <div class="availability-badge">${formatAvailability(activity.availability)}</div>
+            `;
+            
+            // Calculate how many slots this activity spans
+            const slotSpan = endSlot - startSlot;
+            
+            // Add to the time slot
+            const timeContent = startingSlot.querySelector('.time-content');
+            timeContent.appendChild(activityElement);
+            activityElement.style.gridRow = `span ${slotSpan}`;
+            
+            // Mark this slot as having activity
+            startingSlot.classList.remove('empty-slot');
+            startingSlot.classList.add('has-activity');
+            
+            // Mark subsequent slots as occupied (but keep them in the flow)
+            for (let i = startSlot + 1; i < endSlot; i++) {
+                if (timeSlotsContainer.children[i]) {
+                    timeSlotsContainer.children[i].classList.add('occupied-slot');
+                }
+            }
+        });
     }
+}
 
     // Function to download calendar as PNG
     function downloadCalendarAsPNG() {
