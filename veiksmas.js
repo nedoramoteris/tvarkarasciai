@@ -257,7 +257,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function formatAvailability(availability) {
         const availabilityText = {
             'available': '<div class="availability-badge-available">atrašo / atsiliepia</div>',
-            'somewhat': '<div class="availability-badge-somewhat-unavailable">kartais atrašo į žinutes</div>',
+            'somewhat': '<div class="availability-badge-somewhat-unavailable">kartais atrašo / atsiliepia</div>',
             'unavailable': '<div class="availability-badge-unavailable">susisiekti neįmanoma</div>'
         };
         return availabilityText[availability] || '';
