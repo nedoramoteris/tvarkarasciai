@@ -341,10 +341,10 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
 }
 
 .calendar-activity {
+  border-radius:7px !important;
     position: relative;
-    width: 33vh;
+    width: 100%;
     padding: 5px;
-    border-radius: 4px;
     font-size: 11px;
     background-color: #3a3936;
     min-height: 100%;
@@ -352,6 +352,34 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
     display: flex;
     flex-direction: column;
     margin-bottom: 2px;
+    padding-bottom: 5px; /* Reduced from 20px */
+}
+.activity-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  
+}
+.availability-badge-container {
+    margin-top: auto; /* Pushes badge to bottom */
+    padding-top: 5px; /* Space between content and badge */
+  
+}
+.time-slot.has-activity, 
+.time-slot.occupied-slot {
+    background-color: #3a3936 !important;
+}
+
+.dark-mode .time-slot.has-activity,
+.dark-mode .time-slot.occupied-slot {
+    background-color: #e0e0e0 !important;
+}
+
+.time-slot {
+    transition: background-color 0.3s ease;
+}
+.dark-mode .calendar-activity {
+    background-color: #e0e0e0;
 }
 
 .dark-mode .calendar-activity {
@@ -382,7 +410,7 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
     text-align: justify;
     margin-bottom: 3px;
 }
-
+.calendar-activity.activity-available {border-radius:7px !important;}
 /* Availability Badges */
 .availability-badge-unavailable {
     background-color: #934343 !important;
