@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to format availability text
     function formatAvailability(availability) {
         const availabilityText = {
-            'available': '<div class="availability-badge-available">atrašo į žinutes</div>',
+            'available': '<div class="availability-badge-available">atrašo / atsiliepia</div>',
             'somewhat': '<div class="availability-badge-somewhat-unavailable">kartais atrašo į žinutes</div>',
             'unavailable': '<div class="availability-badge-unavailable">susisiekti neįmanoma</div>'
         };
