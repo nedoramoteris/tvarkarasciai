@@ -277,69 +277,209 @@ document.addEventListener('DOMContentLoaded', function() {
         addActivityBtn.textContent = 'Pridėti veiklą';
     }
     
-    // Function to generate calendar with aligned activities
-   function generateCalendar() {
-    document.querySelectorAll('.calendar-day').forEach(dayElement => {
-        const dayHeader = dayElement.querySelector('.day-header');
-        dayElement.innerHTML = '';
-        dayElement.appendChild(dayHeader);
-    });
+    // Function to generate calendar with hourly slots
+    function generateCalendar() {
+        // Clear existing calendar
+        document.querySelectorAll('.calendar-day').forEach(dayElement => {
+            const dayHeader = dayElement.querySelector('.day-header');
+            dayElement.innerHTML = '';
+            dayElement.appendChild(dayHeader);
+        });
 
-    if (activities.length === 0) {
-        alert('No activities to display. Please add some activities first.');
-        return;
+        if (activities.length === 0) {
+            alert('No activities to display. Please add some activities first.');
+            return;
+        }
+
+        // Group activities by day
+        const activitiesByDay = {
+            'Pirmadienis': [],
+            'Antradienis': [],
+            'Trečiadienis': [],
+            'Ketvirtadienis': [],
+            'Penktadienis': [],
+            'Šeštadienis': [],
+            'Sekmadienis': []
+        };
+
+        activities.forEach(activity => {
+            activitiesByDay[activity.day].push(activity);
+        });
+
+        // For each day, create 30-minute slots and place activities
+        for (const day in activitiesByDay) {
+            const dayElement = Array.from(document.querySelectorAll('.calendar-day'))
+                .find(el => el.querySelector('.day-header').textContent === day);
+            
+            if (!dayElement) continue;
+            
+            // Create 48 half-hour slots (00:00, 00:30, 01:00, etc.)
+            for (let hour = 0; hour < 24; hour++) {
+                for (let minute = 0; minute < 60; minute += 30) {
+                    const timeSlot = document.createElement('div');
+                    timeSlot.className = 'time-slot';
+                    
+                    // Format time display (00:00, 00:30 format)
+                    const formattedTime = hour.toString().padStart(2, '0') + ':' + minute.toString().padStart(2, '0');
+                    
+                    timeSlot.innerHTML = `
+                        <div class="time-label">${formattedTime}</div>
+                        <div class="time-content"></div>
+                    `;
+                    
+                    dayElement.appendChild(timeSlot);
+                }
+            }
+            
+            // Place activities in their correct time slots
+            activitiesByDay[day].forEach(activity => {
+                const [startHour, startMinute] = activity.startTime.split(':').map(Number);
+                const [endHour, endMinute] = activity.endTime.split(':').map(Number);
+                
+                // Calculate which time slots this activity spans
+                const startSlotIndex = (startHour * 2) + Math.floor(startMinute / 30);
+                const endSlotIndex = (endHour * 2) + Math.ceil(endMinute / 30);
+                
+                // Find all time slots this activity covers
+                const timeSlots = Array.from(dayElement.querySelectorAll('.time-slot'))
+                    .slice(startSlotIndex, endSlotIndex);
+                
+                if (timeSlots.length === 0) return;
+                
+                // Create activity element
+                const activityElement = document.createElement('div');
+                activityElement.className = `calendar-activity activity-${activity.availability}`;
+                activityElement.innerHTML = `
+                    <div class="activity-time-display">${activity.startTime} - ${activity.endTime}</div>
+                    <div class="activity-name-display">${activity.name}</div>
+                    ${activity.desc ? `<div class="activity-desc-display">${activity.desc}</div>` : ''}
+                    <div class="availability-badge">${formatAvailability(activity.availability)}</div>
+                `;
+                
+                // Calculate how many slots this activity spans
+                const slotSpan = endSlotIndex - startSlotIndex;
+                
+                // Add to the first time slot and set grid row span
+                const firstSlotContent = timeSlots[0].querySelector('.time-content');
+                firstSlotContent.appendChild(activityElement);
+                activityElement.style.gridRow = `span ${slotSpan}`;
+                
+                // Adjust height for long descriptions
+                if (activity.desc && activity.desc.length > 50) {
+                    const descHeight = Math.ceil(activity.desc.length / 50) * 15;
+                    activityElement.style.minHeight = `${descHeight}px`;
+                }
+                
+                // Mark subsequent slots as occupied
+                for (let i = 1; i < timeSlots.length; i++) {
+                    timeSlots[i].classList.add('occupied-slot');
+                }
+            });
+        }
+
+        // Handle activities that span multiple days
+        handleMultiDayActivities();
     }
 
-    // Group activities by day
-    const activitiesByDay = {
-        'Pirmadienis': [],
-        'Antradienis': [],
-        'Trečiadienis': [],
-        'Ketvirtadienis': [],
-        'Penktadienis': [],
-        'Šeštadienis': [],
-        'Sekmadienis': []
-    };
-
-    // Sort activities by start time for each day
-    activities.forEach(activity => {
-        activitiesByDay[activity.day].push(activity);
-    });
-
-    // Sort activities within each day by start time
-    for (const day in activitiesByDay) {
-        activitiesByDay[day].sort((a, b) => a.startTime.localeCompare(b.startTime));
-    }
-
-    // Find all unique time slots across all days
-    const allTimeSlots = new Set();
-    activities.forEach(activity => {
-        allTimeSlots.add(`${activity.startTime}-${activity.endTime}`);
-    });
-
-    // Create a grid structure to align activities
-    const timeSlotArray = Array.from(allTimeSlots).sort();
-
-    // For each day, add activities in order without gaps
-    for (const day in activitiesByDay) {
-        const dayElement = Array.from(document.querySelectorAll('.calendar-day'))
-            .find(el => el.querySelector('.day-header').textContent === day);
+    // Function to handle activities that span multiple days
+    function handleMultiDayActivities() {
+        const dayOrder = ['Pirmadienis', 'Antradienis', 'Trečiadienis', 'Ketvirtadienis', 'Penktadienis', 'Šeštadienis', 'Sekmadienis'];
         
-        const dayActivities = activitiesByDay[day];
-        
-        dayActivities.forEach(activity => {
-            const activityElement = document.createElement('div');
-            activityElement.className = `calendar-activity activity-${activity.availability}`;
-            activityElement.innerHTML = `
-                <div class="activity-time-display">${activity.startTime} - ${activity.endTime}</div>
-                <div class="activity-name-display">${activity.name}</div>
-                ${activity.desc ? `<div class="activity-desc-display" style="margin-top: 3px; font-size: 10px;">${activity.desc}</div>` : ''}
-                <div class="availability-badge">${formatAvailability(activity.availability)}</div>
-            `;
-            dayElement.appendChild(activityElement);
+        activities.forEach(activity => {
+            const [startHour, startMinute] = activity.startTime.split(':').map(Number);
+            const [endHour, endMinute] = activity.endTime.split(':').map(Number);
+            
+            // Check if activity spans past midnight
+            if (endHour < startHour || (endHour === startHour && endMinute < startMinute)) {
+                // Activity spans to next day
+                const currentDayIndex = dayOrder.indexOf(activity.day);
+                if (currentDayIndex === -1 || currentDayIndex === dayOrder.length - 1) return;
+                
+                const nextDay = dayOrder[currentDayIndex + 1];
+                const nextDayElement = Array.from(document.querySelectorAll('.calendar-day'))
+                    .find(el => el.querySelector('.day-header').textContent === nextDay);
+                
+                if (!nextDayElement) return;
+                
+                // Calculate slots for current day (from start time to midnight)
+                const currentDayEndSlotIndex = 48; // Midnight (24:00)
+                const currentDayStartSlotIndex = (startHour * 2) + Math.floor(startMinute / 30);
+                const currentDaySlotSpan = currentDayEndSlotIndex - currentDayStartSlotIndex;
+                
+                // Calculate slots for next day (from midnight to end time)
+                const nextDayStartSlotIndex = 0; // Midnight (00:00)
+                const nextDayEndSlotIndex = (endHour * 2) + Math.ceil(endMinute / 30);
+                const nextDaySlotSpan = nextDayEndSlotIndex - nextDayStartSlotIndex;
+                
+                // Find time slots for current day
+                const currentDayTimeSlots = Array.from(document.querySelectorAll('.calendar-day'))
+                    .find(el => el.querySelector('.day-header').textContent === activity.day)
+                    .querySelectorAll('.time-slot');
+                
+                const currentDaySlots = Array.from(currentDayTimeSlots)
+                    .slice(currentDayStartSlotIndex, currentDayEndSlotIndex);
+                
+                // Find time slots for next day
+                const nextDaySlots = Array.from(nextDayElement.querySelectorAll('.time-slot'))
+                    .slice(nextDayStartSlotIndex, nextDayEndSlotIndex);
+                
+                if (currentDaySlots.length === 0 || nextDaySlots.length === 0) return;
+                
+                // Create activity element for current day (start part)
+                const currentDayActivityElement = document.createElement('div');
+                currentDayActivityElement.className = `calendar-activity activity-${activity.availability} multi-day-activity multi-day-start`;
+                currentDayActivityElement.innerHTML = `
+                    <div class="activity-time-display">${activity.startTime} - 24:00</div>
+                    <div class="activity-name-display">${activity.name}</div>
+                    ${activity.desc ? `<div class="activity-desc-display">${activity.desc}</div>` : ''}
+                    <div class="availability-badge">${formatAvailability(activity.availability)}</div>
+                `;
+                
+                // Add to current day's first slot
+                const currentDayFirstSlotContent = currentDaySlots[0].querySelector('.time-content');
+                currentDayFirstSlotContent.appendChild(currentDayActivityElement);
+                currentDayActivityElement.style.gridRow = `span ${currentDaySlotSpan}`;
+                
+                // Adjust height for long descriptions
+                if (activity.desc && activity.desc.length > 50) {
+                    const descHeight = Math.ceil(activity.desc.length / 50) * 15;
+                    currentDayActivityElement.style.minHeight = `${descHeight}px`;
+                }
+                
+                // Mark subsequent slots in current day as occupied
+                for (let i = 1; i < currentDaySlots.length; i++) {
+                    currentDaySlots[i].classList.add('occupied-slot');
+                }
+                
+                // Create activity element for next day (end part)
+                const nextDayActivityElement = document.createElement('div');
+                nextDayActivityElement.className = `calendar-activity activity-${activity.availability} multi-day-activity multi-day-end`;
+                nextDayActivityElement.innerHTML = `
+                    <div class="activity-time-display">00:00 - ${activity.endTime}</div>
+                    <div class="activity-name-display">${activity.name}</div>
+                    ${activity.desc ? `<div class="activity-desc-display">${activity.desc}</div>` : ''}
+                    <div class="availability-badge">${formatAvailability(activity.availability)}</div>
+                `;
+                
+                // Add to next day's first slot
+                const nextDayFirstSlotContent = nextDaySlots[0].querySelector('.time-content');
+                nextDayFirstSlotContent.appendChild(nextDayActivityElement);
+                nextDayActivityElement.style.gridRow = `span ${nextDaySlotSpan}`;
+                
+                // Adjust height for long descriptions
+                if (activity.desc && activity.desc.length > 50) {
+                    const descHeight = Math.ceil(activity.desc.length / 50) * 15;
+                    nextDayActivityElement.style.minHeight = `${descHeight}px`;
+                }
+                
+                // Mark subsequent slots in next day as occupied
+                for (let i = 1; i < nextDaySlots.length; i++) {
+                    nextDaySlots[i].classList.add('occupied-slot');
+                }
+            }
         });
     }
-} 
+
     // Function to download calendar as PNG
     function downloadCalendarAsPNG() {
         const calendarSection = document.querySelector('.calendar-section');
