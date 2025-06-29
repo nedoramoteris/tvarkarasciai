@@ -221,8 +221,7 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
 
 .activity-description {
     margin-top: 5px !important;
-    margin-bottom:5px !important;
-
+    font-size: 13px;
 }
 
 .activity-desc-display {
@@ -354,9 +353,18 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
     grid-template-columns: 30px 1fr;
     gap: 5px;
     min-height: 30px;
-    margin-bottom:8px;
+      margin-bottom: 80px !important; /* Adds large bottom margin */
+
+}
+/* Base styling for time slots with activities */
+.time-slot.has-activity {
+    margin-bottom: 80px !important; /* Adds large bottom margin */
 }
 
+/* If you're using grid layout, you may need to adjust row spans */
+.calendar-day {
+    grid-auto-rows: min-content; /* Allows rows to expand */
+}
 .time-label {
     font-size: 10px;
     color: #6E6761;
@@ -670,3 +678,4 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
     left: -10000px;
     visibility: hidden;
 }
+
