@@ -342,7 +342,7 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
 
 .calendar-activity {
     position: relative;
-    width: 130%;
+    width: calc(100% + 150px);
     padding: 5px;
     border-radius: 4px;
     font-size: 11px;
@@ -352,7 +352,6 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
     display: flex;
     flex-direction: column;
     margin-bottom: 2px;
-  margin-left:-40px;
 }
 
 .dark-mode .calendar-activity {
