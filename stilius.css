@@ -1,8 +1,8 @@
 :root {
-  --daddy-gradient: linear-gradient(to right, #444b44, #9c8672);}
+  --daddy-gradient: linear-gradient(to right, #444b44, #9c8672);
+}
 
 body, html {
-
     font-family: 'Montserrat', sans-serif;
     background-color: #1c1c1b;
     color: #6E6761;
@@ -21,8 +21,7 @@ body.dark-mode {
 }
 
 .planner-container {
-    width: 100%;
-    max-width: 1200px;
+    width: 97%;
     margin: 0 auto;
 }
 
@@ -55,11 +54,11 @@ h1 {
 
 .form-group {
     margin-bottom: 0px;
-  margin-top:8px;
-  text-transform:uppercase;
-  font-family:"Lemon/Milk light", sans-serif;
-  letter-spacing:1px;
-  width:98%;
+    margin-top: 8px;
+    text-transform: uppercase;
+    font-family: "Lemon/Milk light", sans-serif;
+    letter-spacing: 1px;
+    width: 98%;
 }
 
 label {
@@ -117,7 +116,7 @@ input:focus, select:focus, textarea:focus {
 .add-activity {
     background-color: #333;
     color: #6E6761;
-  font-weight:bold;
+    font-weight: bold;
     border: none;
     padding: 10px 15px;
     border-radius: 4px;
@@ -127,7 +126,7 @@ input:focus, select:focus, textarea:focus {
     transition: background-color 0.3s ease;
     text-transform: uppercase;
     letter-spacing: 1px;
-  margin-top:15px;
+    margin-top: 15px;
 }
 
 .add-activity:hover {
@@ -175,9 +174,12 @@ input:focus, select:focus, textarea:focus {
     font-size: 12px;
     color: #6E6761;
 }
-.activity-time-display {color: #a59f92 !important;
-font-family:'Lemon/Milk light',sans-serif;
-letter-spacing:1px;}
+
+.activity-time-display {
+    color: #a59f92 !important;
+    font-family: 'Lemon/Milk light', sans-serif;
+    letter-spacing: 1px;
+}
 
 .dark-mode .activity-time {
     color: #666;
@@ -187,10 +189,13 @@ letter-spacing:1px;}
     margin-top: 5px !important;
     font-size: 13px;
 }
+
 .activity-desc-display {
-font-size:11px !important;
-font-family: 'Montserrat', sans-serif;
-text-align:justify;}
+    font-size: 10px !important;
+    font-family: 'Montserrat', sans-serif;
+    text-align: justify;
+}
+
 .remove-activity {
     background: none;
     border: none;
@@ -208,9 +213,7 @@ text-align:justify;}
     background: #21211f;
     padding: 25px;
     border-radius: 7px;
-  width:1300px !important;
-  margin-left:-70px;
-  padding-right:45px;
+    width: 100% !important;
 }
 
 .dark-mode .calendar-section {
@@ -229,9 +232,9 @@ text-align:justify;}
     letter-spacing: 2px;
     font-size: 16px;
     background-image: var(--daddy-gradient);
-    border-radius:7px;
-  padding:6px;
-  color:white;
+    border-radius: 7px;
+    padding: 6px;
+    color: white;
 }
 
 .calendar-actions {
@@ -243,7 +246,7 @@ text-align:justify;}
 .download-calendar {
     background-color: #333;
     color: #6E6761;
-  font-weight:bold;
+    font-weight: bold;
     border: none;
     padding: 8px 15px;
     border-radius: 4px;
@@ -286,45 +289,84 @@ text-align:justify;}
     border-radius: 6px;
     padding: 15px;
     min-height: 120px;
-width:150px;
+    width: 86%;
+    display: grid;
+    grid-template-rows: auto;
+    grid-auto-rows: 1fr;
+    gap: 2px;
 }
-
-.activity-name-display {
-font-weight:bold;
-  font-family:'Lemon/Milk light',sans-serif;
-letter-spacing:1px;
-font-size:13px !important;}
-.activity-name {
-font-family:'Lemon/Milk light',sans-serif;
-letter-spacing:1px;}
 
 .dark-mode .calendar-day {
     background-color: #f0f0f0;
 }
 
 .day-header {
-    letter-spacing:1px;
+    letter-spacing: 1px;
     margin-bottom: 10px;
     padding-bottom: 5px;
     border-bottom: 1px solid #444;
     color: #a2988e;
-  font-family:'lemon/milk light',sans-serif;
+    font-family: 'lemon/milk light', sans-serif;
+    grid-column: 1 / -1;
 }
 
 .dark-mode .day-header {
     border-bottom-color: #ddd;
 }
 
+.time-slot {
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    gap: 5px;
+    min-height: 30px;
+}
+
+.time-label {
+    font-size: 10px;
+    color: #6E6761;
+    align-self: center;
+}
+
+.time-content {
+    position: relative;
+}
+
 .calendar-activity {
-    border-bottom: 0px solid #2a2927;
-    padding: 8px;
-    border-radius: 7px;
-    margin-bottom: 8px;
+    position: absolute;
+    margin-left: -40px;
+    width: calc(135%);
+    padding: 5px;
+    border-radius: 4px;
     font-size: 11px;
+    overflow: hidden;
+    background-color: #3a3936;
+    border-left: 0px solid #666;
+    min-height: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
 
 .dark-mode .calendar-activity {
     background-color: #e0e0e0;
+}
+
+.activity-name-display {
+    font-weight: bold;
+    font-family: 'Lemon/Milk light', sans-serif;
+    letter-spacing: 1px;
+    font-size: 12px !important;
+    margin-bottom: 3px;
+  color:#a2988e;
+}
+
+.activity-name {
+    font-family: 'Lemon/Milk light', sans-serif;
+    letter-spacing: 1px;
+}
+
+.occupied-slot {
+    visibility: hidden;
 }
 
 .activity-time-display {
@@ -332,6 +374,7 @@ letter-spacing:1px;}
     margin-bottom: 3px;
     color: #a2988e;
 }
+
 .activity-time {
     font-weight: bold;
     margin-bottom: 3px;
@@ -366,46 +409,37 @@ letter-spacing:1px;}
     color: #aba19e;
 }
 
-@media (max-width: 768px) {
-    .calendar-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .time-inputs {
-        flex-direction: column;
-    }
-    
-    .calendar-actions {
-        flex-direction: column;
-    }
+.activity-ability {
+    display: none !important;
 }
 
-#calendar-canvas {
-    position: fixed;
-    top: -10000px;
-    left: -10000px;
-    visibility: hidden;
+.availability-badge-unavailable {
+    background-color: #934343 !important;
+    border-left: 4px solid #c75858 !important;
 }
 
+.availability-badge-available {
+    background-color: #4b6052 !important;
+    border-left: 4px solid #6ba06c !important;
+}
 
-.activity-ability {display:none !important;}
-.availability-badge-unavailable {background-color: #934343 !important;
-      border-left: 4px solid #c75858 !important;}
+.availability-badge-somewhat-unavailable {
+    background-color: #a2844c !important;
+    border-left: 4px solid #d3a755 !important;
+}
 
-.availability-badge-available {background-color: #4b6052 !important; /* Green */
-    border-left: 4px solid #6ba06c !important;}
-.availability-badge-somewhat-unavailable{background-color: #a2844c !important;
-      border-left: 4px solid #d3a755 !important;}
-.availability-badge-unavailable, .availability-badge-available, .availability-badge-somewhat-unavailable {
-  padding:4px;
-  border-radius:7px;
-  margin-top:6px;
-  margin-bottom:3px;
-  color:white;
-  text-transform:uppercase;
-  font-family: 'Lemon/Milk light', sans-serif;
+.availability-badge-unavailable, 
+.availability-badge-available, 
+.availability-badge-somewhat-unavailable {
+    padding: 4px;
+    border-radius: 7px;
+    margin-top: 6px;
+    margin-bottom: 3px;
+    color: white;
+    text-transform: uppercase;
+    font-family: 'Lemon/Milk light', sans-serif;
     letter-spacing: 1px;
-  font-size:7px !important;
+    font-size: 7px !important;
 }
 
 .activity-actions {
@@ -416,9 +450,9 @@ letter-spacing:1px;}
 }
 
 .edit-activity {
-background: none;
-  color: #6E6761;
-  font-weight:bold;
+    background: none;
+    color: #6E6761;
+    font-weight: bold;
     border: none;
     padding: 8px 15px;
     border-radius: 4px;
@@ -436,8 +470,8 @@ background: none;
 
 .copy-activity {
     background: none;
-  color: #6E6761;
-  font-weight:bold;
+    color: #6E6761;
+    font-weight: bold;
     border: none;
     padding: 8px 15px;
     border-radius: 4px;
@@ -452,15 +486,6 @@ background: none;
 .copy-activity:hover {
     color: #aba19e;
 }
-
-.activity-actions {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    margin-left: auto;
-}
-
-/* [Previous CSS remains the same until the end, add these new styles at the bottom] */
 
 .days-checkboxes {
     display: flex;
@@ -501,7 +526,6 @@ background: none;
     background-color: #e0e0e0;
 }
 
-/* [Rest of your existing CSS remains the same...] */
 .saved-schedules-section {
     background: #292725;
     padding: 25px;
@@ -546,4 +570,67 @@ background: none;
 
 .dark-mode .schedule-btn:hover {
     background-color: #e0e0e0;
+}
+
+.schedule-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Multi-day activity styling */
+.multi-day-activity {
+    position: relative;
+    z-index: 1;
+}
+
+.multi-day-start {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.multi-day-middle {
+    border-radius: 0;
+}
+
+.multi-day-end {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .calendar-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .calendar-day {
+        width: auto;
+        margin-left: 0;
+    }
+    
+    .calendar-section {
+        width: auto !important;
+        margin-left: 0;
+        padding-right: 25px;
+    }
+    
+    .time-inputs {
+        flex-direction: column;
+    }
+    
+    .calendar-actions {
+        flex-direction: column;
+    }
+    
+    .days-checkboxes {
+        flex-direction: column;
+    }
+}
+
+#calendar-canvas {
+    position: fixed;
+    top: -10000px;
+    left: -10000px;
+    visibility: hidden;
 }
