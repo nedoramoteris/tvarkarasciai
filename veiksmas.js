@@ -277,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addActivityBtn.textContent = 'Pridėti veiklą';
     }
     
-    // Function to generate calendar with hourly slots
+    // Function to generate calendar with hourly slots starting at 1 AM
     function generateCalendar() {
         // Clear existing calendar
         document.querySelectorAll('.calendar-day').forEach(dayElement => {
@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function() {
             activitiesByDay[activity.day].push(activity);
         });
 
-        // For each day, create time slots starting from the first activity
+        // For each day, create time slots starting at 1 AM
         for (const day in activitiesByDay) {
             const dayActivities = activitiesByDay[day];
             if (dayActivities.length === 0) continue; // Skip days with no activities
@@ -316,26 +316,13 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (!dayElement) continue;
             
-            // Find the earliest start time for this day
-            let earliestStartTime = "23:59";
-            dayActivities.forEach(activity => {
-                if (activity.startTime < earliestStartTime) {
-                    earliestStartTime = activity.startTime;
-                }
-            });
-
-            const [startHour, startMinute] = earliestStartTime.split(':').map(Number);
-            
-            // Calculate the starting slot (round down to nearest half hour)
-            const startSlotHour = startMinute >= 30 ? startHour : startHour;
-            const startSlotMinute = startMinute >= 30 ? 30 : 0;
-            
-            // Create time slots from the earliest activity's start time to midnight
-            let currentHour = startSlotHour;
-            let currentMinute = startSlotMinute;
+            // Create time slots starting at 1 AM (01:00) to 1 AM next day (24 hours)
+            let currentHour = 1; // Start at 1 AM
+            let currentMinute = 0;
             let totalSlots = 0;
             
-            while (totalSlots < 48) { // Maximum of 48 half-hour slots in a day
+            // Create slots for the entire day (48 half-hour slots)
+            while (totalSlots < 48) {
                 const timeSlot = document.createElement('div');
                 timeSlot.className = 'time-slot';
                 
@@ -394,6 +381,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         endSlotIndex = i;
                         break;
                     }
+                }
+                
+                // Handle activities that span midnight (end time is next day)
+                if (endHour < startHour || (endHour === startHour && endMinute < startMinute)) {
+                    endSlotIndex = allSlots.length; // Extend to end of day
                 }
                 
                 if (startSlotIndex === -1 || endSlotIndex <= startSlotIndex) return;
