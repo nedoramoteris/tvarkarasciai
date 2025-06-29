@@ -353,7 +353,6 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
     grid-template-columns: 30px 1fr;
     gap: 5px;
     min-height: 30px;
-      margin-bottom: 80px !important; /* Adds large bottom margin */
 
 }
 /* Base styling for time slots with activities */
@@ -460,12 +459,12 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
 .availability-badge-unavailable {
     background-color: #934343 !important;
     border-left: 4px solid #c75858 !important;
+  
 }
 
 .availability-badge-available {
     background-color: #4b6052 !important;
-    border-left: 4px solid #6ba06c !important;
-}
+    border-left: 4px solid #6ba06c !important;}
 
 .availability-badge-somewhat-unavailable {
     background-color: #a2844c !important;
@@ -679,3 +678,6 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
     visibility: hidden;
 }
 
+.time-slot:has(.calendar-activity) {
+    margin-bottom: 80px;
+}
