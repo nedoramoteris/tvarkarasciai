@@ -342,6 +342,7 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
     color: #a2988e;
     font-family: 'lemon/milk light', sans-serif;
     grid-column: 1 / -1;
+
 }
 
 .dark-mode .day-header {
@@ -352,8 +353,8 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
     display: grid;
     grid-template-columns: 30px 1fr;
     gap: 5px;
-    min-height: 30px;
-
+  min-height:30px;
+margin-bottom:80px;
 }
 /* Base styling for time slots with activities */
 .time-slot.has-activity {
@@ -388,6 +389,7 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
+  
 }
 
 .dark-mode .calendar-activity {
@@ -678,6 +680,3 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
     visibility: hidden;
 }
 
-.time-slot:has(.calendar-activity) {
-    margin-bottom: 80px;
-}
