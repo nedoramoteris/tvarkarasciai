@@ -228,6 +228,7 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
     font-size: 10px !important;
     font-family: 'Montserrat', sans-serif;
     text-align: justify;
+  margin-bottom:5px;
 }
 
 .remove-activity {
