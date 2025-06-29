@@ -372,6 +372,9 @@ function generateCalendar() {
                 endSlot = 48;
             }
             
+            // Calculate how many slots this activity spans
+            const slotSpan = endSlot - startSlot;
+            
             // Get the starting time slot
             const startingSlot = timeSlotsContainer.children[startSlot];
             if (!startingSlot) return;
@@ -386,13 +389,17 @@ function generateCalendar() {
                 <div class="availability-badge">${formatAvailability(activity.availability)}</div>
             `;
             
-            // Calculate how many slots this activity spans
-            const slotSpan = endSlot - startSlot;
-            
             // Add to the time slot
             const timeContent = startingSlot.querySelector('.time-content');
             timeContent.appendChild(activityElement);
             activityElement.style.gridRow = `span ${slotSpan}`;
+            
+            // Hide the time labels for the spanned slots
+            for (let i = startSlot; i < endSlot; i++) {
+                if (timeSlotsContainer.children[i]) {
+                    timeSlotsContainer.children[i].querySelector('.time-label').style.display = 'none';
+                }
+            }
             
             // Mark this slot as having activity
             startingSlot.classList.remove('empty-slot');
