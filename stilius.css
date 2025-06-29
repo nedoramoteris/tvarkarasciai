@@ -342,7 +342,7 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
 
 .calendar-activity {
     position: relative;
-    width: 43vh;
+    width: 33vh;
     padding: 5px;
     border-radius: 4px;
     font-size: 11px;
