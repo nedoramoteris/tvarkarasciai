@@ -306,60 +306,99 @@ document.addEventListener('DOMContentLoaded', function() {
             activitiesByDay[activity.day].push(activity);
         });
 
-        // For each day, create 30-minute slots starting from 1:00 AM to 12:30 AM next day
+        // For each day, create time slots starting from the first activity
         for (const day in activitiesByDay) {
+            const dayActivities = activitiesByDay[day];
+            if (dayActivities.length === 0) continue; // Skip days with no activities
+
             const dayElement = Array.from(document.querySelectorAll('.calendar-day'))
                 .find(el => el.querySelector('.day-header').textContent === day);
             
             if (!dayElement) continue;
             
-            // Create time slots from 1:00 AM to 12:30 AM (next day)
-            for (let hour = 1; hour <= 24; hour++) {
-                for (let minute = 0; minute < 60; minute += 30) {
-                    const timeSlot = document.createElement('div');
-                    timeSlot.className = 'time-slot';
-                    
-                    // Handle hour display (1-24 format)
-                    const displayHour = hour > 23 ? hour - 24 : hour;
-                    const formattedTime = displayHour.toString().padStart(2, '0') + ':' + minute.toString().padStart(2, '0');
-                    
-                    timeSlot.innerHTML = `
-                        <div class="time-label">${formattedTime}</div>
-                        <div class="time-content"></div>
-                    `;
-                    
-                    dayElement.appendChild(timeSlot);
+            // Find the earliest start time for this day
+            let earliestStartTime = "23:59";
+            dayActivities.forEach(activity => {
+                if (activity.startTime < earliestStartTime) {
+                    earliestStartTime = activity.startTime;
                 }
+            });
+
+            const [startHour, startMinute] = earliestStartTime.split(':').map(Number);
+            
+            // Calculate the starting slot (round down to nearest half hour)
+            const startSlotHour = startMinute >= 30 ? startHour : startHour;
+            const startSlotMinute = startMinute >= 30 ? 30 : 0;
+            
+            // Create time slots from the earliest activity's start time to midnight
+            let currentHour = startSlotHour;
+            let currentMinute = startSlotMinute;
+            let totalSlots = 0;
+            
+            while (totalSlots < 48) { // Maximum of 48 half-hour slots in a day
+                const timeSlot = document.createElement('div');
+                timeSlot.className = 'time-slot';
+                
+                const formattedTime = currentHour.toString().padStart(2, '0') + ':' + 
+                                     currentMinute.toString().padStart(2, '0');
+                
+                timeSlot.innerHTML = `
+                    <div class="time-label">${formattedTime}</div>
+                    <div class="time-content"></div>
+                `;
+                
+                dayElement.appendChild(timeSlot);
+                
+                // Increment time by 30 minutes
+                currentMinute += 30;
+                if (currentMinute >= 60) {
+                    currentMinute = 0;
+                    currentHour += 1;
+                }
+                if (currentHour >= 24) {
+                    currentHour = 0;
+                }
+                
+                totalSlots++;
             }
             
             // Place activities in their correct time slots
-            activitiesByDay[day].forEach(activity => {
+            dayActivities.forEach(activity => {
                 const [startHour, startMinute] = activity.startTime.split(':').map(Number);
                 const [endHour, endMinute] = activity.endTime.split(':').map(Number);
                 
-                // Convert to 24-hour format for calculation (1:00 AM = 1, 11:00 PM = 23, 12:00 AM = 0)
-                let startHour24 = startHour;
-                let endHour24 = endHour;
-                
                 // Calculate which time slots this activity spans
-                // Since our slots start at 1:00 AM (index 0), we need to adjust the calculation
-                let startSlotIndex = (startHour24 * 2) + Math.floor(startMinute / 30);
-                let endSlotIndex = (endHour24 * 2) + Math.ceil(endMinute / 30);
+                const allSlots = Array.from(dayElement.querySelectorAll('.time-slot'));
                 
-                // Adjust for the 1:00 AM starting point
-                startSlotIndex -= 2; // Because 1:00 AM is index 0 (12:00 AM would be -2)
-                endSlotIndex -= 2;
+                // Find the starting slot
+                let startSlotIndex = -1;
+                for (let i = 0; i < allSlots.length; i++) {
+                    const slotTime = allSlots[i].querySelector('.time-label').textContent;
+                    const [slotHour, slotMinute] = slotTime.split(':').map(Number);
+                    
+                    if ((slotHour > startHour) || 
+                        (slotHour === startHour && slotMinute >= startMinute)) {
+                        startSlotIndex = i;
+                        break;
+                    }
+                }
                 
-                // Handle wrapping around midnight
-                if (startSlotIndex < 0) startSlotIndex += 48;
-                if (endSlotIndex < 0) endSlotIndex += 48;
-                if (endSlotIndex < startSlotIndex) endSlotIndex += 48;
+                // Find the ending slot
+                let endSlotIndex = allSlots.length;
+                for (let i = 0; i < allSlots.length; i++) {
+                    const slotTime = allSlots[i].querySelector('.time-label').textContent;
+                    const [slotHour, slotMinute] = slotTime.split(':').map(Number);
+                    
+                    if ((slotHour > endHour) || 
+                        (slotHour === endHour && slotMinute >= endMinute)) {
+                        endSlotIndex = i;
+                        break;
+                    }
+                }
                 
-                // Find all time slots this activity covers
-                const timeSlots = Array.from(dayElement.querySelectorAll('.time-slot'))
-                    .slice(startSlotIndex, endSlotIndex);
+                if (startSlotIndex === -1 || endSlotIndex <= startSlotIndex) return;
                 
-                if (timeSlots.length === 0) return;
+                const timeSlots = allSlots.slice(startSlotIndex, endSlotIndex);
                 
                 // Create activity element
                 const activityElement = document.createElement('div');
