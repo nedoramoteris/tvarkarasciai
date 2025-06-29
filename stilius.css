@@ -353,6 +353,7 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
     grid-template-columns: 30px 1fr;
     gap: 5px;
     min-height: 30px;
+    margin-bottom:8px;
 }
 
 .time-label {
